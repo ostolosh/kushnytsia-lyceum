@@ -3,9 +3,9 @@
 
 backend:
   name: github
-  repo: ВАШ_ЛОГІН/НАЗВА_РЕПОЗИТОРІЮ   # наприклад kushnytsia-lyceum/site
+  repo: ostolosh/test
   branch: main
-  base_url: https://ВАШ-ВОРКЕР.workers.dev  # адреса сервісу входу, див. README
+  # base_url: https://ВАШ-ВОРКЕР.workers.dev  # адреса сервісу входу, див. README. Поки її немає, входьте кнопкою «Sign in with Token» (токен GitHub)
 
 locale: uk
 site_url: https://ВАШ-САЙТ
