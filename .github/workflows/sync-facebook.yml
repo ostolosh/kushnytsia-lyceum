@@ -1,8 +1,10 @@
 name: Синхронізація новин з Facebook
 
 on:
-  schedule:
-    - cron: "0 5,14 * * *"   # двічі на день (UTC)
+  # Автозапуск вимкнено, доки не додано секрети FB_PAGE_ID і FB_PAGE_TOKEN.
+  # Щоб увімкнути, розкоментуйте два рядки нижче.
+  # schedule:
+  #   - cron: "0 5,14 * * *"   # двічі на день (UTC)
   workflow_dispatch: {}        # кнопка "Run workflow" для ручного запуску
 
 permissions:
