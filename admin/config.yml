@@ -256,34 +256,27 @@ collections:
             summary: "{{day}}"
             fields:
               - { label: День, name: day, widget: select, options: [Понеділок, Вівторок, Середа, Четвер, "П'ятниця"] }
-              - label: Страви
-                name: items
-                widget: relation
-                multiple: true
-                collection: canteen
-                file: dishes
-                value_field: "items.*.name"
-                search_fields: ["items.*.name", "items.*.category"]
-                display_fields: ["{{items.*.name}} · {{items.*.category}}"]
-                hint: "Оберіть страви зі списку. Якщо страви немає, спершу додайте її в «Їдальня → Список страв»."
+              - { label: "Перші страви", name: first, widget: relation, multiple: true, required: false, collection: canteen, file: dishes, value_field: "first.*" }
+              - { label: "Другі страви", name: second, widget: relation, multiple: true, required: false, collection: canteen, file: dishes, value_field: "second.*" }
+              - { label: "Гарніри", name: garnish, widget: relation, multiple: true, required: false, collection: canteen, file: dishes, value_field: "garnish.*" }
+              - { label: "Салати", name: salad, widget: relation, multiple: true, required: false, collection: canteen, file: dishes, value_field: "salad.*" }
+              - { label: "Каші", name: porridge, widget: relation, multiple: true, required: false, collection: canteen, file: dishes, value_field: "porridge.*" }
+              - { label: "Випічка й десерти", name: bakery, widget: relation, multiple: true, required: false, collection: canteen, file: dishes, value_field: "bakery.*" }
+              - { label: "Напої", name: drinks, widget: relation, multiple: true, required: false, collection: canteen, file: dishes, value_field: "drinks.*" }
+              - { label: "Інше", name: other, widget: relation, multiple: true, required: false, collection: canteen, file: dishes, value_field: "other.*" }
       - name: dishes
         label: Список страв
         file: dishes.json
         format: json
         fields:
-          - label: Страви
-            name: items
-            widget: list
-            label_singular: страву
-            summary: "{{name}} · {{category}}"
-            hint: "Заповніть один раз усі страви, які готує їдальня. Потім у меню на тиждень їх достатньо вибрати зі списку."
-            fields:
-              - { label: Назва, name: name, widget: string, hint: "Назва має бути унікальною: її показують у меню." }
-              - label: Категорія
-                name: category
-                widget: select
-                default: Друге
-                options: [Каша, Перше, Друге, Гарнір, Салат, Випічка або десерт, Напій, Інше]
+          - { label: "Перші страви", name: first, widget: list, required: false, label_singular: страву, hint: "Заповніть один раз усі страви, кожну у своїй категорії. У меню на тиждень їх потім достатньо вибрати зі списку.", field: { label: Страва, name: dish, widget: string } }
+          - { label: "Другі страви", name: second, widget: list, required: false, label_singular: страву, field: { label: Страва, name: dish, widget: string } }
+          - { label: "Гарніри", name: garnish, widget: list, required: false, label_singular: страву, field: { label: Страва, name: dish, widget: string } }
+          - { label: "Салати", name: salad, widget: list, required: false, label_singular: страву, field: { label: Страва, name: dish, widget: string } }
+          - { label: "Каші", name: porridge, widget: list, required: false, label_singular: страву, field: { label: Страва, name: dish, widget: string } }
+          - { label: "Випічка й десерти", name: bakery, widget: list, required: false, label_singular: страву, field: { label: Страва, name: dish, widget: string } }
+          - { label: "Напої", name: drinks, widget: list, required: false, label_singular: страву, field: { label: Страва, name: dish, widget: string } }
+          - { label: "Інше", name: other, widget: list, required: false, label_singular: страву, field: { label: Страва, name: dish, widget: string } }
 
   - name: achievements
     label: Досягнення учнів
