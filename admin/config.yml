@@ -3,7 +3,7 @@
 
 backend:
   name: github
-  repo: ostolosh/test
+  repo: ostolosh/kushnytsia-lyceum
   branch: main
   # base_url: https://ВАШ-ВОРКЕР.workers.dev  # адреса сервісу входу, див. README. Поки її немає, входьте кнопкою «Sign in with Token» (токен GitHub)
 
