@@ -124,6 +124,24 @@ ul.plain { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
 .acc li { padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 15px; min-width: 0; overflow-wrap: anywhere; }
 .acc li span { display: block; color: var(--muted); font-size: 13px; }
 .acc a { color: var(--accent); text-decoration: none; }
+.acc li.person, .memo li { display: flex; gap: 12px; align-items: flex-start; }
+.acc li .av, .memo li .av { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex: none; background: var(--line); }
+.acc li small, .memo li small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.memo { margin-top: 36px; }
+.memo h3 { font-size: 20px; margin-bottom: 6px; }
+.memo > p { color: var(--muted); margin: 0 0 16px; max-width: 62ch; }
+.memo ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 10px 24px; }
+.memo li { padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 15px; min-width: 0; overflow-wrap: anywhere; }
+.memo li span { display: block; color: var(--muted); font-size: 13px; }
+.memo li .yrs { font-family: var(--f-mono); font-size: 12.5px; color: var(--accent); }
+.cls td.n, .cls th.n { text-align: right; }
+.cls table { min-width: 0; }
+.cls td.n small { display: block; color: var(--muted); font-size: 12px; font-weight: 400; white-space: nowrap; }
+@media (max-width: 520px) { .cls th, .cls td { padding: 10px 12px; } }
+.cls tfoot td { font-weight: 700; border-top: 2px solid var(--line); border-bottom: 0; }
+.cls a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.cls a:hover { text-decoration: underline; }
+.cls .asof { color: var(--muted); font-size: 14px; margin: -12px 0 16px; }
 .acc a:hover { text-decoration: underline; }
 .note { color: var(--muted); font-size: 14px; margin: 16px 0 0; }
 dialog.modal { width: min(760px, calc(100vw - 24px)); max-height: calc(100vh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 18px; background: var(--bg); color: var(--ink); overflow: auto; }
@@ -344,6 +362,91 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
 </header>
 
 <!--DATA-->
+<script type="application/json" id="data-classes.json">{
+ "asOf": "",
+ "items": [
+  {
+   "name": "1-А",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  },
+  {
+   "name": "2-А",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  },
+  {
+   "name": "3-А",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  },
+  {
+   "name": "4-А",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  },
+  {
+   "name": "5-А",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  },
+  {
+   "name": "6-А",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  },
+  {
+   "name": "7-А",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  },
+  {
+   "name": "8-А",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  },
+  {
+   "name": "9-А",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  },
+  {
+   "name": "10-А",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  },
+  {
+   "name": "11-А",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  }
+ ]
+}</script>
+<script type="application/json" id="data-former-staff.json">{
+ "items": []
+}</script>
 <script type="application/json" id="data-announcement.json">{
  "active": false,
  "level": "info",
@@ -2590,7 +2693,38 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
  "Німецька мова": "German",
  "Фізична культура": "Physical education",
  "Хімія": "Chemistry",
- "Я досліджую світ": "I explore the world"
+ "Я досліджую світ": "I explore the world",
+ "Вони працювали в ліцеї": "They worked at the lyceum",
+ "Пам'ятаємо і дякуємо вчителям, які віддали ліцею роки своєї праці.": "We remember and thank the teachers who gave the lyceum years of their work.",
+ "Класи": "Classes",
+ "Наповнюваність класів": "Class enrolment",
+ "Класний керівник": "Class teacher",
+ "Учнів": "Students",
+ "Усього": "Total",
+ "Класний керівник {c}": "Class teacher of {c}",
+ "У ліцеї з {y} р.": "At the lyceum since {y}",
+ "з {y} р.": "since {y}",
+ "до {y} р.": "until {y}",
+ "Кваліфікаційні категорії": "Qualification categories",
+ "Педагогічні звання": "Teaching titles",
+ "Станом на {d}": "As of {d}",
+ "хл. {b}, дів. {g}": "boys {b}, girls {g}",
+ "Спеціаліст": "Specialist",
+ "Спеціаліст другої категорії": "Specialist, second category",
+ "Спеціаліст першої категорії": "Specialist, first category",
+ "Спеціаліст вищої категорії": "Specialist, highest category",
+ "Старший учитель": "Senior teacher",
+ "Учитель-методист": "Teacher-methodologist",
+ "Вихователь-методист": "Educator-methodologist",
+ "Педагог-організатор-методист": "Organiser-methodologist",
+ "Практичний психолог-методист": "School psychologist-methodologist",
+ "Старший вихователь": "Senior educator",
+ "На заслуженому відпочинку": "Retired",
+ "Перейшов(ла) на іншу роботу": "Moved to another job",
+ "Переїхав(ла)": "Moved away",
+ "Звільнення": "Left the lyceum",
+ "Світла пам'ять": "In loving memory",
+ "Педагогів у колективі: {n}.": "Educators on staff: {n}."
 }</script>
 <!--/I18N-->
 <script>
@@ -2751,7 +2885,7 @@ window.__sheetOr = function (name, fallback) {
     <div class="wrap">
       <span class="eyebrow">Про нас</span>
       <h2>Школа з історією з 1953 року</h2>
-      <div class="chips quick"><a class="chip" href="#staff">Вчителі</a><a class="chip" id="qlGallery" href="#gallery" hidden>Фотогалерея</a><a class="chip" id="qlCanteen" href="#canteen" hidden>Їдальня</a><a class="chip" id="qlEvents" href="#events" hidden>Події</a><a class="chip" id="qlPolls" href="#polls" hidden>Опитування</a></div>
+      <div class="chips quick"><a class="chip" href="#staff">Вчителі</a><a class="chip" id="qlClasses" href="#classes" hidden>Класи</a><a class="chip" id="qlGallery" href="#gallery" hidden>Фотогалерея</a><a class="chip" id="qlCanteen" href="#canteen" hidden>Їдальня</a><a class="chip" id="qlEvents" href="#events" hidden>Події</a><a class="chip" id="qlPolls" href="#polls" hidden>Опитування</a></div>
       <div class="cols">
         <div>
           <p>Ліцей заснований у 1953 році, у нинішньому будинку працює з 1979 року. Тут навчаються діти 1–11 класів: початкова, основна та старша школа.</p>
@@ -2788,8 +2922,26 @@ window.__sheetOr = function (name, fallback) {
     <div class="wrap">
       <span class="eyebrow">Педагогічний колектив</span>
       <h2>Вчителі ліцею</h2>
-      <p style="color:var(--muted);margin:-12px 0 20px;max-width:62ch">У колективі 1 учитель-методист, 7 старших учителів, 23 педагоги з вищою категорією, 12 з першою, 9 з другою та 35 спеціалістів.</p>
+      <p id="staffSummary" style="color:var(--muted);margin:-12px 0 20px;max-width:62ch">У колективі 1 учитель-методист, 7 старших учителів, 23 педагоги з вищою категорією, 12 з першою, 9 з другою та 35 спеціалістів.</p>
       <div id="staffList"></div>
+      <div class="memo" id="memo" hidden>
+        <h3>Вони працювали в ліцеї</h3>
+        <p>Пам'ятаємо і дякуємо вчителям, які віддали ліцею роки своєї праці.</p>
+        <ul id="memoList"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="classes" class="cls" hidden>
+    <div class="wrap">
+      <span class="eyebrow">Класи</span>
+      <h2>Наповнюваність класів</h2>
+      <p class="asof" id="clsAsOf" hidden></p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Клас</th><th>Класний керівник</th><th class="n">Учнів</th></tr></thead>
+        <tbody id="clsBody"></tbody>
+        <tfoot><tr><td colspan="2">Усього</td><td class="n" id="clsTotal"></td></tr></tfoot>
+      </table></div>
     </div>
   </section>
 
@@ -3189,17 +3341,85 @@ window.__sheetOr = function (name, fallback) {
     var c = document.createElement("span"); c.className = "cnt"; c.textContent = count; s.appendChild(c); d.appendChild(s);
     var ul = document.createElement("ul"); items.forEach(function (li) { ul.appendChild(li); }); d.appendChild(ul); return d;
   }
-  getJSON("staff.json").then(function (data) {
-    var host = document.getElementById("staffList");
-    window.__addIdx([].concat.apply([], data.groups.map(function (g) { return g.people.map(function (p) { return { k: "Вчителі", title: _tn(p.name), text: _t(p.role) + " " + _t(g.title), hash: "staff" }; }); })));
+  var LAT = { "А": "a", "Б": "b", "В": "v", "Г": "g", "Д": "d", "Е": "e", "Є": "ye" };
+  function clsId(name) { var m = /^(\d+)\s*-?\s*(\S+)$/.exec(String(name || "").trim().toUpperCase()); return m ? m[1] + (LAT[m[2]] || m[2].toLowerCase()) : ""; }
+  function node(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function avatar(src) { var im = node("img", "av"); im.src = src; im.alt = ""; im.loading = "lazy"; return im; }
+  var classesP = getJSON("classes.json").catch(function () { return { items: [] }; });
+  function personLi(p, ledClasses) {
+    var li = node("li", "person");
+    if (p.photo) li.appendChild(avatar(p.photo));
+    var b = node("div"); b.appendChild(document.createTextNode(_tn(p.name)));
+    b.appendChild(node("span", "", _t(p.role)));
+    var det = [p.subjects ? _t(p.subjects) : "", p.category ? _t(p.category) : "", p.rank ? _t(p.rank) : "",
+      ledClasses && ledClasses.length ? _tf("Класний керівник {c}", { c: ledClasses.join(", ") }) : "",
+      p.since ? _tf("У ліцеї з {y} р.", { y: p.since }) : ""].filter(Boolean);
+    if (det.length) b.appendChild(node("small", "", det.join(" · ")));
+    li.appendChild(b); return li;
+  }
+  function staffSummary(people) {
+    function tally(key) { var m = {}; people.forEach(function (p) { if (p[key]) m[p[key]] = (m[p[key]] || 0) + 1; }); return Object.keys(m).map(function (k) { return _t(k) + " — " + m[k]; }); }
+    var cat = tally("category"), rank = tally("rank");
+    if (!cat.length && !rank.length) return;
+    var parts = [_tf("Педагогів у колективі: {n}.", { n: people.length })];
+    if (cat.length) parts.push(_t("Кваліфікаційні категорії") + ": " + cat.join(", ") + ".");
+    if (rank.length) parts.push(_t("Педагогічні звання") + ": " + rank.join(", ") + ".");
+    document.getElementById("staffSummary").textContent = parts.join(" ");
+  }
+  Promise.all([getJSON("staff.json"), classesP]).then(function (r) {
+    var data = r[0], led = {};
+    ((r[1] && r[1].items) || []).forEach(function (c) { if (c && c.teacher && c.name && !c.sample) (led[c.teacher.trim()] = led[c.teacher.trim()] || []).push(c.name); });
+    var host = document.getElementById("staffList"), all = [];
+    window.__addIdx([].concat.apply([], data.groups.map(function (g) { return g.people.map(function (p) { return { k: "Вчителі", title: _tn(p.name), text: [_t(p.role), _t(g.title), p.subjects || ""].join(" "), hash: "staff" }; }); })));
     data.groups.forEach(function (g, i) {
-      var items = g.people.map(function (p) {
-        var li = document.createElement("li"); li.appendChild(document.createTextNode(_tn(p.name)));
-        var sp = document.createElement("span"); sp.textContent = _t(p.role); li.appendChild(sp); return li;
-      });
+      var items = g.people.map(function (p) { all.push(p); return personLi(p, led[String(p.name || "").trim()]); });
       host.appendChild(acc(_t(g.title), String(g.people.length), items, i === 0));
     });
+    staffSummary(all);
   }).catch(function () { document.getElementById("staffList").textContent = _t("Список вчителів тимчасово недоступний."); });
+
+  // ---------- вчителі, які працювали в ліцеї
+  getJSON("former-staff.json").then(function (d) {
+    var items = ((d && d.items) || []).filter(function (p) { return p && p.name; });
+    if (!items.length) return;
+    items.sort(function (a, b) { return (+b.to || 0) - (+a.to || 0) || String(a.name).localeCompare(String(b.name), "uk"); });
+    var ul = document.getElementById("memoList");
+    items.forEach(function (p) {
+      var li = node("li"); if (p.photo) li.appendChild(avatar(p.photo));
+      var b = node("div"); b.appendChild(document.createTextNode(_tn(p.name)));
+      if (p.role) b.appendChild(node("span", "", _t(p.role)));
+      var yrs = p.from && p.to ? p.from + "–" + p.to : p.from ? _tf("з {y} р.", { y: p.from }) : p.to ? _tf("до {y} р.", { y: p.to }) : "";
+      var line = [yrs, p.showReason && p.reason ? _t(p.reason) : ""].filter(Boolean).join(" · ");
+      if (line) b.appendChild(node("span", "yrs", line));
+      if (_tx(p, "note")) b.appendChild(node("small", "", _tx(p, "note")));
+      li.appendChild(b); ul.appendChild(li);
+    });
+    document.getElementById("memo").hidden = false;
+    window.__addIdx(items.map(function (p) { return { k: "Вчителі", title: _tn(p.name), text: [_t("Вони працювали в ліцеї"), p.role || ""].join(" "), hash: "staff" }; }));
+  }).catch(function () {});
+
+  // ---------- наповнюваність класів
+  classesP.then(function (d) {
+    var items = ((d && d.items) || []).filter(function (c) { return c && c.name && (c.teacher || +c.students > 0); });
+    if (!items.length) return;
+    var tb = document.getElementById("clsBody"), total = 0, sample = false;
+    items.forEach(function (c) {
+      var tr = node("tr"), td = node("td"), id = clsId(c.name);
+      if (id) { var a = node("a", "", c.name); a.href = "#rozklad-" + id; a.title = _tf("Розклад {c}", { c: c.name }); td.appendChild(a); } else td.textContent = c.name;
+      if (c.sample) { sample = true; td.appendChild(document.createTextNode(" ")); td.appendChild(node("span", "tag", _t("Приклад"))); }
+      tr.appendChild(td);
+      tr.appendChild(node("td", "", c.teacher ? _tn(c.teacher) : "—"));
+      var n = +c.students > 0 ? +c.students : 0; total += n;
+      var nt = node("td", "n", n ? String(n) : "—");
+      if (+c.boys > 0 || +c.girls > 0) nt.appendChild(node("small", "", _tf("хл. {b}, дів. {g}", { b: +c.boys || 0, g: +c.girls || 0 })));
+      tr.appendChild(nt);
+      tb.appendChild(tr);
+    });
+    document.getElementById("clsTotal").textContent = total || "—";
+    if (d.asOf) { var dt = new Date(d.asOf), el = document.getElementById("clsAsOf"); if (!isNaN(dt)) { el.textContent = _tf("Станом на {d}", { d: dt.toLocaleDateString(window.__lang === "en" ? "en-GB" : "uk-UA", { day: "numeric", month: "long", year: "numeric" }) }); el.hidden = false; } }
+    document.getElementById("classes").hidden = false; document.getElementById("qlClasses").hidden = false;
+    window.__addIdx(items.map(function (c) { return { k: "Класи", title: c.name, text: [_t("Класний керівник"), c.teacher ? _tn(c.teacher) : ""].join(" "), hash: "classes" }; }));
+  }).catch(function () {});
   getJSON("docs.json").then(function (data) {
     var host = document.getElementById("docList");
     window.__addIdx([].concat.apply([], data.groups.map(function (g) { return g.links.map(function (l) { return { k: "Документи", title: _t(l.title), text: _t(g.title), href: l.url }; }); })));
