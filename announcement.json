@@ -1,9 +1,9 @@
 {
- "active": false,
- "level": "info",
- "title": "",
- "text": "",
- "link": "",
- "linkText": "",
- "until": ""
+  "active": true,
+  "level": "info",
+  "title": "Десь Святого Миколая",
+  "text": "завітайте на свято",
+  "link": "",
+  "linkText": "Детальніше про подію",
+  "until": "2026-12-06"
 }
