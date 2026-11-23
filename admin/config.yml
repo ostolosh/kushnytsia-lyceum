@@ -258,8 +258,32 @@ collections:
               - { label: День, name: day, widget: select, options: [Понеділок, Вівторок, Середа, Четвер, "П'ятниця"] }
               - label: Страви
                 name: items
-                widget: list
-                field: { label: Страва, name: item, widget: string }
+                widget: relation
+                multiple: true
+                collection: canteen
+                file: dishes
+                value_field: "items.*.name"
+                search_fields: ["items.*.name", "items.*.category"]
+                display_fields: ["{{items.*.name}} · {{items.*.category}}"]
+                hint: "Оберіть страви зі списку. Якщо страви немає, спершу додайте її в «Їдальня → Список страв»."
+      - name: dishes
+        label: Список страв
+        file: dishes.json
+        format: json
+        fields:
+          - label: Страви
+            name: items
+            widget: list
+            label_singular: страву
+            summary: "{{name}} · {{category}}"
+            hint: "Заповніть один раз усі страви, які готує їдальня. Потім у меню на тиждень їх достатньо вибрати зі списку."
+            fields:
+              - { label: Назва, name: name, widget: string, hint: "Назва має бути унікальною: її показують у меню." }
+              - label: Категорія
+                name: category
+                widget: select
+                default: Друге
+                options: [Каша, Перше, Друге, Гарнір, Салат, Випічка або десерт, Напій, Інше]
 
   - name: achievements
     label: Досягнення учнів
