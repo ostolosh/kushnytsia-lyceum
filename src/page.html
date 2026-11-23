@@ -222,6 +222,8 @@ a.chip { display: inline-flex; align-items: center; text-decoration: none; }
 .mday.today { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .mday h3 { font-size: 15px; display: flex; justify-content: space-between; gap: 8px; }
 .mday h3 em { font: 500 11px var(--f-mono); color: var(--accent); font-style: normal; letter-spacing: .06em; text-transform: uppercase; }
+.mday .mcat { display: block; margin-top: 12px; font-size: 14px; font-weight: 700; color: var(--ink); }
+.mday .mcat + ul { margin-top: 4px; }
 .mday ul { margin: 10px 0 0; padding-left: 18px; color: var(--muted); font-size: 15px; display: grid; gap: 4px; }
 .album .ph.none { display: grid; place-items: center; background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--bg))); color: var(--accent-ink); font: 700 40px var(--f-display); }
 .album .ph.cert { background: var(--surface); }
@@ -463,13 +465,13 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
  "items": []
 }</script>
 <script type="application/json" id="data-announcement.json">{
- "active": false,
- "level": "info",
- "title": "",
- "text": "",
- "link": "",
- "linkText": "",
- "until": ""
+  "active": true,
+  "level": "info",
+  "title": "День Святого Миколая",
+  "text": "завітайте на свято",
+  "link": "",
+  "linkText": "Детальніше про подію",
+  "until": "2026-12-06"
 }</script>
 <script type="application/json" id="data-site.json">{
  "formEndpoint": "",
@@ -493,43 +495,88 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
  "days": [
   {
    "day": "Понеділок",
-   "items": [
-    "Каша молочна",
-    "Бутерброд із маслом",
+   "first": [],
+   "second": [],
+   "garnish": [],
+   "salad": [],
+   "porridge": [
+    "Каша молочна"
+   ],
+   "bakery": [
+    "Бутерброд із маслом"
+   ],
+   "drinks": [
     "Чай"
-   ]
+   ],
+   "other": []
   },
   {
    "day": "Вівторок",
-   "items": [
-    "Суп овочевий",
-    "Котлета з картопляним пюре",
+   "first": [
+    "Суп овочевий"
+   ],
+   "second": [
+    "Котлета з картопляним пюре"
+   ],
+   "garnish": [],
+   "salad": [],
+   "porridge": [],
+   "bakery": [],
+   "drinks": [
     "Компот"
-   ]
+   ],
+   "other": []
   },
   {
    "day": "Середа",
-   "items": [
-    "Запіканка сирна",
-    "Сметана",
+   "first": [],
+   "second": [
+    "Запіканка сирна"
+   ],
+   "garnish": [],
+   "salad": [],
+   "porridge": [],
+   "bakery": [],
+   "drinks": [
     "Какао"
+   ],
+   "other": [
+    "Сметана"
    ]
   },
   {
    "day": "Четвер",
-   "items": [
-    "Борщ",
-    "Макарони з м'ясом",
+   "first": [
+    "Борщ"
+   ],
+   "second": [
+    "Макарони з м'ясом"
+   ],
+   "garnish": [],
+   "salad": [],
+   "porridge": [],
+   "bakery": [],
+   "drinks": [
     "Узвар"
-   ]
+   ],
+   "other": []
   },
   {
    "day": "П'ятниця",
-   "items": [
-    "Омлет",
-    "Салат із капусти",
+   "first": [],
+   "second": [
+    "Омлет"
+   ],
+   "garnish": [],
+   "salad": [
+    "Салат із капусти"
+   ],
+   "porridge": [],
+   "bakery": [],
+   "drinks": [
     "Чай з лимоном"
-   ]
+   ],
+   "other": []
   }
  ]
 }</script>
@@ -3003,7 +3050,14 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
  "Наступне фото": "Next photo",
  "Робочих місць": "Workstations",
  "Уроки в цьому кабінеті": "Lessons in this room",
- "Відповідає за: {c}": "In charge of: {c}"
+ "Відповідає за: {c}": "In charge of: {c}",
+ "Перші страви": "Soups",
+ "Другі страви": "Main courses",
+ "Гарніри": "Side dishes",
+ "Салати": "Salads",
+ "Каші": "Porridge",
+ "Випічка й десерти": "Baked goods and desserts",
+ "Напої": "Drinks"
 }</script>
 <!--/I18N-->
 <script>
@@ -4076,6 +4130,7 @@ window.__sheetOr = function (name, fallback) {
   }).catch(function () {});
 
   // ---------- їдальня
+  var MENU_CATS = [["first", "Перші страви"], ["second", "Другі страви"], ["garnish", "Гарніри"], ["salad", "Салати"], ["porridge", "Каші"], ["bakery", "Випічка й десерти"], ["drinks", "Напої"], ["other", "Інше"]];
   window.loadData("menu.json").then(function (m) {
     if (!m || !m.days || !m.days.length) return;
     $("canteen").hidden = false; $("qlCanteen").hidden = false;
@@ -4085,8 +4140,12 @@ window.__sheetOr = function (name, fallback) {
     m.days.forEach(function (d) {
       var i = DAYS.map(norm).indexOf(norm(d.day)), card = el("div", "mday" + (i === today ? " today" : ""));
       var h = el("h3", "", _t(d.day)); if (i === today) h.appendChild(el("em", "", _t("Сьогодні"))); card.appendChild(h);
-      var items = EN && d.items_en && d.items_en.length ? d.items_en : (d.items || []).map(_t);
-      var ul = el("ul"); items.forEach(function (t) { ul.appendChild(el("li", "", t)); }); card.appendChild(ul); host.appendChild(card);
+      var items = [];
+      function list(arr) { var ul = el("ul"); arr.forEach(function (t) { ul.appendChild(el("li", "", t)); items.push(t); }); card.appendChild(ul); }
+      var grouped = MENU_CATS.filter(function (c) { return d[c[0]] && d[c[0]].length; });
+      if (grouped.length) grouped.forEach(function (c) { card.appendChild(el("b", "mcat", _t(c[1]))); list(d[c[0]].map(_t)); });
+      else list(EN && d.items_en && d.items_en.length ? d.items_en : (d.items || []).map(_t));
+      host.appendChild(card);
       entries.push({ k: "Їдальня", title: _tf("Меню: {d}", { d: _t(d.day) }), text: items.join(", "), hash: "canteen" });
     });
     window.__addIdx(entries);
