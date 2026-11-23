@@ -1,5 +1,5 @@
 {
- "asOf": "",
+ "asOf": "2026-11-23",
  "items": [
   {
    "name": "1-А",
@@ -66,10 +66,10 @@
   },
   {
    "name": "10-А",
-   "teacher": "",
-   "students": 0,
-   "boys": 0,
-   "girls": 0
+   "teacher": "Калинич Людмила Юріївна",
+   "students": 21,
+   "boys": 10,
+   "girls": 11
   },
   {
    "name": "11-А",
