@@ -116,6 +116,64 @@ collections:
                 fields:
                   - { label: ПІБ, name: name, widget: string }
                   - { label: Посада, name: role, widget: string }
+                  - { label: Предмети, name: subjects, widget: string, required: false, hint: "Наприклад: математика, інформатика." }
+                  - label: Кваліфікаційна категорія
+                    name: category
+                    widget: select
+                    required: false
+                    options: [Спеціаліст, Спеціаліст другої категорії, Спеціаліст першої категорії, Спеціаліст вищої категорії]
+                  - label: Педагогічне звання
+                    name: rank
+                    widget: select
+                    required: false
+                    options: [Старший учитель, Учитель-методист, Вихователь-методист, Педагог-організатор-методист, Практичний психолог-методист, Старший вихователь]
+                  - { label: Працює в ліцеї з (рік), name: since, widget: number, value_type: int, required: false }
+                  - { label: Фото, name: photo, widget: image, required: false, hint: "Лише за згодою працівника." }
+      - name: former
+        label: Вони працювали в ліцеї
+        file: former-staff.json
+        format: json
+        fields:
+          - label: Колишні працівники
+            name: items
+            widget: list
+            label_singular: працівника
+            summary: "{{name}} ({{from}}–{{to}})"
+            fields:
+              - { label: ПІБ, name: name, widget: string }
+              - { label: Посада або предмет, name: role, widget: string, required: false }
+              - { label: Працював(ла) з (рік), name: from, widget: number, value_type: int, required: false }
+              - { label: Працював(ла) до (рік), name: to, widget: number, value_type: int, required: false }
+              - label: Причина
+                name: reason
+                widget: select
+                required: false
+                options: [На заслуженому відпочинку, Перейшов(ла) на іншу роботу, Переїхав(ла), Звільнення, Світла пам'ять, Інше]
+              - { label: Показувати причину на сайті, name: showReason, widget: boolean, default: false, required: false, hint: "Без позначки причину бачать лише в адмін-панелі." }
+              - { label: Кілька слів про людину, name: note, widget: text, required: false }
+              - { label: Фото, name: photo, widget: image, required: false, hint: "Лише за згодою людини або родини." }
+
+  - name: classes
+    label: Класи
+    files:
+      - name: classes
+        label: Наповнюваність класів
+        file: classes.json
+        format: json
+        fields:
+          - { label: Станом на дату, name: asOf, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false }
+          - label: Класи
+            name: items
+            widget: list
+            label_singular: клас
+            summary: "{{name}} · {{teacher}} · {{students}}"
+            hint: "Розділ з'явиться на сайті, щойно заповните класного керівника або кількість учнів."
+            fields:
+              - { label: Клас, name: name, widget: string, hint: "Як у розкладі, наприклад 5-А." }
+              - { label: Класний керівник, name: teacher, widget: string, required: false, hint: "ПІБ як у списку вчителів, тоді на сайті біля вчителя з'явиться «Класний керівник»." }
+              - { label: Кількість учнів, name: students, widget: number, value_type: int, min: 0, required: false }
+              - { label: З них хлопців, name: boys, widget: number, value_type: int, min: 0, required: false }
+              - { label: З них дівчат, name: girls, widget: number, value_type: int, min: 0, required: false }
 
   - name: announcement
     label: Оголошення на сайті
