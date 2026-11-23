@@ -91,7 +91,43 @@ collections:
                 summary: "{{title}}"
                 fields:
                   - { label: Назва, name: title, widget: string }
-                  - { label: Файл або посилання, name: url, widget: file }
+                  - { label: Файл або посилання, name: url, widget: file, required: false, hint: "Порожнє поле — документ не показується на сайті. Можна вписати #page-назва, щоб відкривалась сторінка з розділу «Сторінки»." }
+
+  - name: pages
+    label: Сторінки
+    files:
+      - name: pages
+        label: Текстові сторінки
+        file: pages.json
+        format: json
+        fields:
+          - label: Сторінки
+            name: items
+            widget: list
+            label_singular: сторінку
+            summary: "{{title}}"
+            hint: "Щоб сторінка з'явилась у «Документах», додайте туди документ із посиланням #page-ідентифікатор."
+            fields:
+              - { label: Ідентифікатор, name: id, widget: string, pattern: ['^[a-z0-9-]+$', "Лише малі латинські літери, цифри й дефіс"], hint: "Наприклад: pravyla. Посилання на сторінку: #page-pravyla" }
+              - { label: Назва, name: title, widget: string }
+              - { label: Дата, name: date, widget: string, required: false }
+              - { label: Текст, name: text, widget: text, hint: "Абзаци розділяйте порожнім рядком. Рядок, що починається з «• » або «- », стає пунктом списку." }
+              - { label: Фото, name: photos, widget: list, required: false, field: { label: Фото, name: photo, widget: image } }
+              - label: Файли
+                name: files
+                widget: list
+                required: false
+                fields:
+                  - { label: Назва, name: title, widget: string }
+                  - { label: Файл, name: file, widget: file }
+              - label: Посилання
+                name: links
+                widget: list
+                required: false
+                fields:
+                  - { label: Назва, name: title, widget: string }
+                  - { label: Адреса, name: url, widget: string }
+              - { label: Група, name: group, widget: hidden }
 
   - name: people
     label: Вчителі

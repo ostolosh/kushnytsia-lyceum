@@ -3,7 +3,7 @@
 Запуск: python3 scripts/build.py"""
 import pathlib, re
 root = pathlib.Path(__file__).resolve().parent.parent
-FILES = ["classes.json", "former-staff.json", "announcement.json", "site.json", "menu.json", "achievements.json", "cabinets.json", "posts.json", "posts-manual.json", "gallery.json", "staff.json", "docs.json", "streets.json", "schedule.json", "events.json", "polls.json"]
+FILES = ["pages.json", "classes.json", "former-staff.json", "announcement.json", "site.json", "menu.json", "achievements.json", "cabinets.json", "posts.json", "posts-manual.json", "gallery.json", "staff.json", "docs.json", "streets.json", "schedule.json", "events.json", "polls.json"]
 blocks = "".join(
     '<script type="application/json" id="data-%s">%s</script>\n' % (f, (root/f).read_text().strip().replace("</", "<\\/"))
     for f in FILES)
