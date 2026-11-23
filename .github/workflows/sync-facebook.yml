@@ -1,14 +1,22 @@
 name: Синхронізація новин з Facebook
 
 on:
-  # Автозапуск вимкнено, доки не додано секрети FB_PAGE_ID і FB_PAGE_TOKEN.
-  # Щоб увімкнути, розкоментуйте два рядки нижче.
-  # schedule:
-  #   - cron: "0 5,14 * * *"   # двічі на день (UTC)
-  workflow_dispatch: {}        # кнопка "Run workflow" для ручного запуску
+  schedule:
+    - cron: "23 4-18/2 * * *"   # кожні 2 години з 6:23 до 20:23 за Києвом (UTC+2)
+  workflow_dispatch:            # кнопка "Run workflow" для ручного запуску
+    inputs:
+      pages:
+        description: "Скільки сторінок дописів забрати (по 25). Для першого заповнення поставте 20."
+        required: false
+        default: "2"
 
 permissions:
   contents: write
+  pages: write
+
+concurrency:
+  group: sync-facebook
+  cancel-in-progress: false
 
 jobs:
   sync:
@@ -22,6 +30,8 @@ jobs:
         env:
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          FB_API_VERSION: ${{ vars.FB_API_VERSION }}
+          FB_PAGES: ${{ github.event.inputs.pages || '2' }}
         run: node scripts/sync-facebook.mjs
       - name: Надіслати нові новини в месенджери
         env:
@@ -32,13 +42,22 @@ jobs:
           VIBER_FROM: ${{ secrets.VIBER_FROM }}
         run: node scripts/notify-messengers.mjs
       - name: Зберегти зміни
+        id: save
         run: |
           git config user.name "lyceum-bot"
           git config user.email "lyceum-bot@users.noreply.github.com"
-          git add posts.json images data/notified.json
+          git add posts.json images data/notified.json 2>/dev/null || git add posts.json images
           if git diff --cached --quiet; then
             echo "Змін немає"
           else
             git commit -m "Оновлення новин з Facebook"
-            git push
+            # якщо за цей час хтось зберіг зміни в адмін-панелі, підтягуємо їх і пробуємо ще раз
+            for i in 1 2 3; do git pull --rebase --quiet && git push && break; sleep 5; done
+            echo "changed=1" >> "$GITHUB_OUTPUT"
           fi
+      - name: Оновити сайт
+        if: steps.save.outputs.changed == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # коміти від бота не завжди самі запускають збирання GitHub Pages, тому просимо явно
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" >/dev/null || echo "Не вдалося запустити збирання Pages (сайт оновиться з наступним комітом)."

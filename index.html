@@ -3576,7 +3576,10 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
  "Випічка й десерти": "Baked goods and desserts",
  "Напої": "Drinks",
  "Відео у Facebook": "Video on Facebook",
- "Разом з архівом старого сайту: {n} публікацій.": "Including the old website archive: {n} posts."
+ "Разом з архівом старого сайту: {n} публікацій.": "Including the old website archive: {n} posts.",
+ "Відкрити у Facebook": "Open on Facebook",
+ "Переглянути відео у Facebook": "Watch the video on Facebook",
+ "Оновлено {d}": "Updated {d}"
 }</script>
 <!--/I18N-->
 <script>
@@ -4123,7 +4126,7 @@ window.__sheetOr = function (name, fallback) {
     if (p.body) { var t = document.createElement("p"); t.className = "mtext"; t.textContent = p.body; nodes.push(t); }
     if (p.links && p.links.length) {
       var lu = document.createElement("ul"); lu.className = "files";
-      p.links.forEach(function (l) { var li = document.createElement("li"), a = document.createElement("a"); a.href = l.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = /facebook|fb\.watch/.test(l.url) ? _t("Відео у Facebook") : (l.title || l.url); li.appendChild(a); lu.appendChild(li); });
+      p.links.forEach(function (l) { var li = document.createElement("li"), a = document.createElement("a"); a.href = l.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = l.label ? _t(l.label) : /facebook|fb\.watch/.test(l.url) ? _t("Відео у Facebook") : (l.title || l.url); li.appendChild(a); lu.appendChild(li); });
       nodes.push(lu);
     }
     if (p.files && p.files.length) {
@@ -4206,15 +4209,24 @@ window.__sheetOr = function (name, fallback) {
 
   Promise.all([loadData("posts.json").catch(function () { return { posts: [] }; }), loadData("posts-manual.json").catch(function () { return { posts: [] }; })]).then(function (res) {
     var data = res[0], manual = (res[1].posts || []).filter(function (m) { return m && m.title; }).map(fromManual);
-    POSTS = manual.concat(data.posts || []).sort(function (a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || new Date(b.date) - new Date(a.date); });
+    // допис із Facebook: перший рядок стає заголовком, решта тексту й усі фото відкриваються у вікні
+    var fb = (data.posts || []).map(function (q) {
+      if (q.sample || q.legacy) return q;
+      var tx = String(window.__lang === "en" && q.text_en ? q.text_en : (q.text || "")).trim(), lines = tx.split(/\n+/), ti = lines.shift() || _t("Публікація"), bo = lines.join("\n\n");
+      if (ti.length > 110) { bo = ti.slice(110) + (bo ? "\n\n" + bo : ""); ti = ti.slice(0, 110).replace(/\s+\S*$/, "") + "…"; }
+      return { id: "fb" + String(q.id).replace(/\W/g, ""), date: q.date, title: ti, body: bo, text: tx, ua: window.__lang === "en" && !q.text_en, image: q.image || "", gallery: q.gallery || (q.image ? [q.image] : []),
+        links: q.url ? [{ url: q.url, label: q.video ? "Переглянути відео у Facebook" : "Відкрити у Facebook" }] : [], files: [], manual: true, fb: true };
+    });
+    POSTS = manual.concat(fb).sort(function (a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || new Date(b.date) - new Date(a.date); });
     if (!POSTS.length) grid.textContent = _t("Поки що немає публікацій."); else render();
     window.__addIdx(POSTS.map(function (p) { var tt = String(window.__lang === "en" && p.text_en ? p.text_en : (p.text || "")); var e = { k: "Новини", title: p.manual ? p.title : tt.trim().split(/\n+/)[0], text: p.manual ? p.body : tt }; if (p.manual) e.act = function () { openPost(p); }; else e.href = p.url; return e; }));
     window.__openPostById = function (id) { var q = POSTS.filter(function (x) { return x.id === id; })[0]; if (q) { openPost(q); return true; } return false; };
     if (window.__pendingPost && window.__openPostById(window.__pendingPost)) window.__pendingPost = null;
     // архів новин старого сайту: вантажиться після основних новин
     fetch("news-archive.json", { cache: "no-cache" }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (arc) {
-      var have = {}; POSTS.forEach(function (x) { have[x.id] = 1; });
-      var add = (arc.posts || []).filter(function (a) { return a && a.title && !have[a.id]; }).map(function (a) {
+      var key = function (d, t) { return String(d || "").slice(0, 10) + "|" + String(t || "").toLowerCase().replace(/[^0-9a-zа-яіїєґ]+/g, "").slice(0, 24); };
+      var have = {}; POSTS.forEach(function (x) { have[x.id] = 1; have[key(x.date, x.title)] = 1; });
+      var add = (arc.posts || []).filter(function (a) { return a && a.title && !have[a.id] && !have[key(a.date, a.title)]; }).map(function (a) {
         return { id: a.id, date: a.date, title: a.title, body: String(a.text || "").trim(), text: a.title + "\n" + (a.text || ""), image: (a.images || [])[0] || "", gallery: a.images || [], links: a.links || [], files: [], manual: true, legacy: true };
       });
       if (!add.length) return;
@@ -4226,7 +4238,7 @@ window.__sheetOr = function (name, fallback) {
       if (info.textContent && data.source === "legacy") info.textContent = _tf("Разом з архівом старого сайту: {n} публікацій.", { n: POSTS.length });
     }).catch(function () {});
     var u = new Date(data.updated);
-    info.textContent = manual.length && data.source !== "facebook" ? "" : data.source === "legacy" ? _t("Показано новини зі старого сайту. Нові публікації з'являться після підключення Facebook.") : (isNaN(u) ? "" : _tf("Оновлено {d}.", { d: fmt.format(u) }));
+    info.textContent = manual.length && data.source !== "facebook" ? "" : data.source === "legacy" ? _t("Показано новини зі старого сайту. Нові публікації з'являться після підключення Facebook.") : (isNaN(u) ? "" : _tf("Оновлено {d}", { d: fmt.format(u) }));
     if (window.__lang === "en" && POSTS.length) info.textContent = (info.textContent ? info.textContent + " " : "") + _t("Більшість новин опубліковано українською.");
     if (data.pageUrl && data.source === "facebook") document.getElementById("fbLink").href = data.pageUrl;
   }).catch(function () { grid.textContent = _t("Не вдалося завантажити новини. Спробуйте оновити сторінку."); });
@@ -4545,7 +4557,7 @@ window.__sheetOr = function (name, fallback) {
   var mainV = document.getElementById("top"), schedV = document.getElementById("viewSchedule");
   function route(hash) {
     var h = decodeURIComponent(typeof hash === "string" ? hash : location.hash.slice(1));
-    var isSched = /^rozklad(-\w+)?$/.test(h), pm = /^post-(\w+)$/.exec(h), pg = /^page-([\w-]+)$/.exec(h);
+    var isSched = /^rozklad(-\w+)?$/.test(h), pm = /^post-([\w-]+)$/.exec(h), pg = /^page-([\w-]+)$/.exec(h);
     if (pg) {
       mainV.hidden = false; schedV.hidden = true;
       try { if (window.__sched) window.__sched.show(false, h); } catch (e) {}
@@ -4557,7 +4569,7 @@ window.__sheetOr = function (name, fallback) {
       mainV.hidden = false; schedV.hidden = true;
       try { if (window.__sched) window.__sched.show(false, h); } catch (e) {}
       var nw = document.getElementById("news"); if (nw) nw.scrollIntoView();
-      if (window.__openPostById) window.__openPostById(pm[1]); else window.__pendingPost = pm[1];
+      if (!(window.__openPostById && window.__openPostById(pm[1]))) window.__pendingPost = pm[1];
       return;
     }
     mainV.hidden = isSched; schedV.hidden = !isSched;
