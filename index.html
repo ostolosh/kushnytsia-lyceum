@@ -245,6 +245,21 @@ a.chip { display: inline-flex; align-items: center; text-decoration: none; }
 .modal ul.eq { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
 .modal .share { display: flex; gap: 10px; flex-wrap: wrap; }
 .modal .share a { min-height: 40px; padding: 0 14px; display: inline-flex; align-items: center; border: 1.5px solid var(--line); border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 14px; background: var(--surface); }
+.car { position: relative; border-radius: 12px; overflow: hidden; background: var(--surface); border: 1px solid var(--line); outline: none; }
+.car:focus-visible { box-shadow: 0 0 0 3px var(--accent); }
+.car .ctrack { display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.car .ctrack::-webkit-scrollbar { display: none; }
+.car .slide { flex: 0 0 100%; scroll-snap-align: center; aspect-ratio: 4 / 3; display: block; }
+.car .slide img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.car .cnav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(0, 0, 0, .5); color: #fff; font: 400 26px/1 var(--f-body); cursor: pointer; display: grid; place-items: center; }
+.car .cnav:disabled { opacity: .25; cursor: default; }
+.car .prev { left: 8px; } .car .next { right: 8px; }
+.car .ccount { position: absolute; right: 10px; top: 10px; background: rgba(0, 0, 0, .55); color: #fff; font: 500 12px var(--f-mono); padding: 3px 9px; border-radius: 99px; }
+.carbox .dots { display: flex; justify-content: center; flex-wrap: wrap; padding: 4px 8px; }
+.carbox .dots button { width: 24px; height: 24px; min-height: 0; border: 0; border-radius: 0; background: none; padding: 0; -webkit-appearance: none; appearance: none; cursor: pointer; display: grid; place-items: center; }
+.carbox .dots button::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.carbox .dots button.on::before { background: var(--accent); }
+.modal .lessons { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
 .modal img.big { width: 100%; max-height: 70vh; object-fit: contain; border-radius: 12px; background: var(--surface); display: block; }
 .form { display: grid; gap: 14px; max-width: 640px; }
 .form label { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
@@ -549,16 +564,14 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
 <script type="application/json" id="data-cabinets.json">{
  "items": [
   {
-   "sample": true,
-   "title": "Кабінет інформатики (приклад)",
+   "title": "Кабінет інформатики",
    "area": "Інформатична",
    "room": "",
-   "teacher": "",
-   "description": "Це приклад картки. Опишіть кабінет, додайте фото класу, перелік обладнання та вчителя, закріпленого за ним.",
-   "equipment": [
-    "Комп'ютери",
-    "Проєктор"
-   ],
+   "scheduleRoom": "Кабінет Інформатики",
+   "seats": null,
+   "teacher": "Остолош Владислав Васильович",
+   "description": "",
+   "equipment": [],
    "photo": "",
    "gallery": []
   }
@@ -2994,7 +3007,14 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
  "Переїхав(ла)": "Moved away",
  "Звільнення": "Left the lyceum",
  "Світла пам'ять": "In loving memory",
- "Педагогів у колективі: {n}.": "Educators on staff: {n}."
+ "Педагогів у колективі: {n}.": "Educators on staff: {n}.",
+ "Фото": "Photos",
+ "Фото {i} з {n}": "Photo {i} of {n}",
+ "Попереднє фото": "Previous photo",
+ "Наступне фото": "Next photo",
+ "Робочих місць": "Workstations",
+ "Уроки в цьому кабінеті": "Lessons in this room",
+ "Відповідає за: {c}": "In charge of: {c}"
 }</script>
 <!--/I18N-->
 <script>
@@ -3560,7 +3580,35 @@ window.__sheetOr = function (name, fallback) {
       image: m.image || (m.gallery && m.gallery[0]) || "", gallery: m.gallery || [], files: (m.files || []).filter(function (f) { return f && f.file; }), pinned: !!m.pinned, manual: true };
   }
 
-  window.__ui = { openModal: openModal, photoGrid: photoGrid, fmt: fmt };
+  // карусель фото: гортання пальцем, стрілками, кнопками й крапками
+  function carousel(list) {
+    var wrap = document.createElement("div"); wrap.className = "car"; wrap.tabIndex = 0;
+    wrap.setAttribute("aria-roledescription", "carousel"); wrap.setAttribute("aria-label", _t("Фото"));
+    var track = document.createElement("div"); track.className = "ctrack"; wrap.appendChild(track);
+    list.forEach(function (src, i) {
+      var a = document.createElement("a"); a.className = "slide"; a.href = src; a.target = "_blank"; a.rel = "noopener";
+      a.setAttribute("aria-label", _tf("Фото {i} з {n}", { i: i + 1, n: list.length }));
+      var im = document.createElement("img"); im.alt = ""; im.src = src; if (i) im.loading = "lazy"; a.appendChild(im); track.appendChild(a);
+    });
+    if (list.length < 2) return wrap;
+    var cur = 0, cnt = document.createElement("span"), dots = document.createElement("div"), prev = document.createElement("button"), next = document.createElement("button");
+    cnt.className = "ccount"; dots.className = "dots";
+    prev.className = "cnav prev"; prev.type = "button"; prev.textContent = "‹"; prev.setAttribute("aria-label", _t("Попереднє фото"));
+    next.className = "cnav next"; next.type = "button"; next.textContent = "›"; next.setAttribute("aria-label", _t("Наступне фото"));
+    list.forEach(function (_, i) { var b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-label", _tf("Фото {i} з {n}", { i: i + 1, n: list.length })); b.addEventListener("click", function () { go(i); }); dots.appendChild(b); });
+    function paint() {
+      cnt.textContent = (cur + 1) + " / " + list.length; prev.disabled = cur === 0; next.disabled = cur === list.length - 1;
+      [].forEach.call(dots.children, function (b, i) { b.className = i === cur ? "on" : ""; if (i === cur) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current"); });
+    }
+    function go(i) { i = Math.max(0, Math.min(list.length - 1, i)); track.scrollTo({ left: i * track.clientWidth, behavior: "smooth" }); cur = i; paint(); }
+    prev.addEventListener("click", function () { go(cur - 1); }); next.addEventListener("click", function () { go(cur + 1); });
+    var t; track.addEventListener("scroll", function () { clearTimeout(t); t = setTimeout(function () { var i = Math.round(track.scrollLeft / Math.max(1, track.clientWidth)); if (i !== cur) { cur = i; paint(); } }, 60); }, { passive: true });
+    wrap.addEventListener("keydown", function (e) { if (e.key === "ArrowLeft") { e.preventDefault(); go(cur - 1); } else if (e.key === "ArrowRight") { e.preventDefault(); go(cur + 1); } });
+    wrap.appendChild(prev); wrap.appendChild(next); wrap.appendChild(cnt);
+    var box = document.createElement("div"); box.className = "carbox"; box.appendChild(wrap); box.appendChild(dots); paint(); return box;
+  }
+
+  window.__ui = { openModal: openModal, photoGrid: photoGrid, carousel: carousel, fmt: fmt };
   function card(p) {
     var lines = String(window.__lang === "en" && p.text_en ? p.text_en : (p.text || "")).trim().split(/\n+/);
     var title = p.manual ? p.title : (lines.shift() || _t("Публікація"));
@@ -3616,13 +3664,15 @@ window.__sheetOr = function (name, fallback) {
   function node(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
   function avatar(src) { var im = node("img", "av"); im.src = src; im.alt = ""; im.loading = "lazy"; return im; }
   var classesP = getJSON("classes.json").catch(function () { return { items: [] }; });
-  function personLi(p, ledClasses) {
+  var cabsP = getJSON("cabinets.json").catch(function () { return { items: [] }; });
+  function personLi(p, ledClasses, cabs) {
     var li = node("li", "person");
     if (p.photo) li.appendChild(avatar(p.photo));
     var b = node("div"); b.appendChild(document.createTextNode(_tn(p.name)));
     b.appendChild(node("span", "", _t(p.role)));
     var det = [p.subjects ? _t(p.subjects) : "", p.category ? _t(p.category) : "", p.rank ? _t(p.rank) : "",
       ledClasses && ledClasses.length ? _tf("Класний керівник {c}", { c: ledClasses.join(", ") }) : "",
+      cabs && cabs.length ? _tf("Відповідає за: {c}", { c: cabs.join(", ") }) : "",
       p.since ? _tf("У ліцеї з {y} р.", { y: p.since }) : ""].filter(Boolean);
     if (det.length) b.appendChild(node("small", "", det.join(" · ")));
     li.appendChild(b); return li;
@@ -3636,13 +3686,14 @@ window.__sheetOr = function (name, fallback) {
     if (rank.length) parts.push(_t("Педагогічні звання") + ": " + rank.join(", ") + ".");
     document.getElementById("staffSummary").textContent = parts.join(" ");
   }
-  Promise.all([getJSON("staff.json"), classesP]).then(function (r) {
-    var data = r[0], led = {};
+  Promise.all([getJSON("staff.json"), classesP, cabsP]).then(function (r) {
+    var data = r[0], led = {}, cabOf = {};
+    ((r[2] && r[2].items) || []).forEach(function (c) { if (c && c.teacher && c.title && !c.sample) (cabOf[c.teacher.trim()] = cabOf[c.teacher.trim()] || []).push(_tx(c, "title")); });
     ((r[1] && r[1].items) || []).forEach(function (c) { if (c && c.teacher && c.name && !c.sample) (led[c.teacher.trim()] = led[c.teacher.trim()] || []).push(c.name); });
     var host = document.getElementById("staffList"), all = [];
     window.__addIdx([].concat.apply([], data.groups.map(function (g) { return g.people.map(function (p) { return { k: "Вчителі", title: _tn(p.name), text: [_t(p.role), _t(g.title), p.subjects || ""].join(" "), hash: "staff" }; }); })));
     data.groups.forEach(function (g, i) {
-      var items = g.people.map(function (p) { all.push(p); return personLi(p, led[String(p.name || "").trim()]); });
+      var items = g.people.map(function (p) { all.push(p); return personLi(p, led[String(p.name || "").trim()], cabOf[String(p.name || "").trim()]); });
       host.appendChild(acc(_t(g.title), String(g.people.length), items, i === 0));
     });
     staffSummary(all);
@@ -4109,26 +4160,45 @@ window.__sheetOr = function (name, fallback) {
   }).catch(function () {});
 
   // ---------- кабінети й напрями
-  window.loadData("cabinets.json").then(function (d) {
+  function norm(x) { return String(x || "").toLowerCase().replace(/[’`ʼ]/g, "'").replace(/\s+/g, " ").trim(); }
+  Promise.all([window.loadData("cabinets.json"),
+    window.loadData("staff.json").catch(function () { return { groups: [] }; }),
+    window.loadData("schedule.json").catch(function () { return { classes: [] }; })]).then(function (r) {
+    var d = r[0], roles = {};
+    ((r[1] && r[1].groups) || []).forEach(function (g) { (g.people || []).forEach(function (p) { if (p && p.name) roles[norm(p.name)] = p.role; }); });
+    // які класи й предмети стоять у розкладі в цьому кабінеті
+    function lessonsIn(cab) {
+      var keys = [cab.scheduleRoom, cab.room, cab.title].map(norm).filter(Boolean), out = {};
+      if (r[2].sample) return [];
+      ((r[2] && r[2].classes) || []).forEach(function (c) {
+        Object.keys(c.days || {}).forEach(function (day) { (c.days[day] || []).forEach(function (l) {
+          if (l && l.r && keys.indexOf(norm(l.r)) >= 0) { var k = c.name; (out[k] = out[k] || {})[l.s] = ((out[k] || {})[l.s] || 0) + 1; }
+        }); });
+      });
+      return Object.keys(out).map(function (k) { return { cls: k, subj: Object.keys(out[k]).map(function (s) { return _t(s) + " (" + out[k][s] + ")"; }).join(", ") }; });
+    }
     var items = (d.items || []).filter(function (i) { return i && i.title; });
     if (!items.length) return;
     gallerySection({ items: items, section: "cabinets", grid: "cabGrid", filter: "cabFilter",
       group: function (i) { return i.area; },
       card: function (i) {
         var area = i.area ? _t(i.area) : "", teacher = i.teacher ? _tn(i.teacher) : "";
-        return albumCard(i.photo, false, _tx(i, "title"), [area, teacher ? _tf("Відповідальний: {n}", { n: teacher }) : ""], i.sample, function () {
+        var photos = [i.photo].concat(i.gallery || []).filter(function (x, n, a) { return x && a.indexOf(x) === n; });
+        return albumCard(photos[0], false, _tx(i, "title"), [area, teacher ? _tf("Відповідальний: {n}", { n: teacher }) : "", photos.length > 1 ? _tf("{n} фото", { n: photos.length }) : ""], i.sample, function () {
           var h = el("h3", "", _tx(i, "title")); h.id = "mTitle"; var nodes = [h];
-          if (i.photo) { var p = el("img", "big"); p.src = i.photo; p.alt = ""; nodes.push(p); }
-          var kv = kvRows([["Галузь", area], ["Кабінет", i.room], ["Відповідальний", teacher]]);
+          if (photos.length) nodes.push(ui.carousel(photos));
+          var role = i.teacher ? roles[norm(i.teacher)] : "";
+          var kv = kvRows([["Галузь", area], ["Кабінет", i.room], ["Відповідальний", teacher ? teacher + (role ? " (" + _t(role) + ")" : "") : ""], ["Робочих місць", i.seats ? String(i.seats) : ""]]);
           if (kv.childNodes.length) nodes.push(kv);
           if (_tx(i, "description")) nodes.push(el("p", "mtext", _tx(i, "description")));
           var eq = EN && i.equipment_en && i.equipment_en.length ? i.equipment_en : (i.equipment || []).map(_t);
           if (eq.length) { nodes.push(el("b", "", _t("Матеріальна база"))); var ul = el("ul", "eq"); eq.forEach(function (e) { ul.appendChild(el("li", "", e)); }); nodes.push(ul); }
-          if (i.gallery && i.gallery.length) nodes.push(ui.photoGrid(i.gallery));
+          var ls = lessonsIn(i);
+          if (ls.length) { nodes.push(el("b", "", _t("Уроки в цьому кабінеті"))); var ul2 = el("ul", "lessons"); ls.forEach(function (x) { var li = el("li"); var a = el("a", "", x.cls); a.href = "#rozklad-" + String(x.cls).toLowerCase().replace(/-/g, "").replace("а", "a").replace("б", "b").replace("в", "v"); a.addEventListener("click", function () { var m = document.getElementById("modal"); if (m && m.close) m.close(); }); li.appendChild(a); li.appendChild(document.createTextNode(": " + x.subj)); ul2.appendChild(li); }); nodes.push(ul2); }
           ui.openModal(area, nodes);
         });
       } });
-    window.__addIdx(items.map(function (i) { return { k: "Кабінети", title: _tx(i, "title"), text: [i.area ? _t(i.area) : "", i.teacher ? _tn(i.teacher) : "", _tx(i, "description")].join(" "), hash: "cabinets" }; }));
+    window.__addIdx(items.map(function (i) { return { k: "Кабінети", title: _tx(i, "title"), text: [i.area ? _t(i.area) : "", i.teacher ? _tn(i.teacher) : "", _tx(i, "description"), (i.equipment || []).join(" ")].join(" "), hash: "cabinets" }; }));
   }).catch(function () {});
 
   // ---------- налаштування сайту й форма звернень

@@ -377,5 +377,12 @@
  "Переїхав(ла)": "Moved away",
  "Звільнення": "Left the lyceum",
  "Світла пам'ять": "In loving memory",
- "Педагогів у колективі: {n}.": "Educators on staff: {n}."
+ "Педагогів у колективі: {n}.": "Educators on staff: {n}.",
+ "Фото": "Photos",
+ "Фото {i} з {n}": "Photo {i} of {n}",
+ "Попереднє фото": "Previous photo",
+ "Наступне фото": "Next photo",
+ "Робочих місць": "Workstations",
+ "Уроки в цьому кабінеті": "Lessons in this room",
+ "Відповідає за: {c}": "In charge of: {c}"
 }

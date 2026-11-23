@@ -306,6 +306,8 @@ collections:
                 widget: select
                 options: [Мовно-літературна, Математична, Природнича, "Соціальна і здоров'язбережна", Громадянська та історична, Технологічна, Інформатична, Мистецька, Фізкультурна, Інше]
               - { label: Номер кабінету, name: room, widget: string, required: false }
+              - { label: Назва в розкладі, name: scheduleRoom, widget: string, required: false, hint: "Як кабінет записаний у колонці «кабінет» розкладу (data/schedule.csv). Тоді в картці буде видно, які класи тут навчаються." }
+              - { label: Кількість робочих місць, name: seats, widget: number, value_type: int, min: 0, required: false }
               - { label: Відповідальний вчитель, name: teacher, widget: string, required: false }
               - { label: Опис, name: description, widget: text, required: false }
               - label: Матеріальна база
@@ -313,8 +315,8 @@ collections:
                 widget: list
                 required: false
                 field: { label: Обладнання, name: item, widget: string }
-              - { label: Головне фото, name: photo, widget: image, required: false }
-              - label: Додаткові фото
+              - { label: Головне фото, name: photo, widget: image, required: false, hint: "Перше фото в картці й у каруселі." }
+              - label: Додаткові фото (карусель)
                 name: gallery
                 widget: list
                 required: false
