@@ -1,0 +1,59 @@
+name: Новини зі старого сайту
+
+# Забирає нові новини зі стрічки kyshnica-soh.ucoz.ua (без токенів) у news-archive.json.
+on:
+  schedule:
+    - cron: "47 4-19/2 * * *"   # кожні 2 години з 6:47 до 21:47 за Києвом (UTC+2)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: content-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Встановити Pillow
+        run: pip install --quiet pillow
+      - name: Забрати нові новини
+        env:
+          UCOZ_PHOTOS: ${{ vars.UCOZ_PHOTOS }}
+        run: python3 scripts/sync-ucoz.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Надіслати нові новини в месенджери
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          VIBER_AUTH_TOKEN: ${{ secrets.VIBER_AUTH_TOKEN }}
+          VIBER_FROM: ${{ secrets.VIBER_FROM }}
+        run: node scripts/notify-messengers.mjs
+      - name: Зберегти зміни
+        id: save
+        run: |
+          git config user.name "lyceum-bot"
+          git config user.email "lyceum-bot@users.noreply.github.com"
+          git add news-archive.json archive/news data/notified.json
+          if git diff --cached --quiet; then
+            echo "Змін немає"
+          else
+            git commit -m "Новини зі старого сайту"
+            for i in 1 2 3; do git pull --rebase --quiet && git push && break; sleep 5; done
+            echo "changed=1" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Оновити сайт
+        if: steps.save.outputs.changed == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" >/dev/null || echo "Не вдалося запустити збирання Pages (сайт оновиться з наступним комітом)."

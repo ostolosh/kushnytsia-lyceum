@@ -1,4 +1,4 @@
-// Надсилає нові новини (з Facebook та написані в адмін-панелі) у Telegram-канал і, за наявності доступу, у Viber-канал.
+// Надсилає нові новини (з Facebook, зі старого сайту та написані в адмін-панелі) у Telegram-канал і, за наявності доступу, у Viber-канал.
 // Пам'ятає вже надіслане в data/notified.json, тому не дублює повідомлення.
 // Перший запуск лише запам'ятовує наявні новини й нічого не надсилає.
 //
@@ -24,6 +24,10 @@ function hash(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^=
 
 const fb = (await readJSON("posts.json", { posts: [] })).posts || [];
 const manual = ((await readJSON("posts-manual.json", { posts: [] })).posts || []).filter((m) => m && m.title);
+const archive = (await readJSON("news-archive.json", { posts: [] })).posts || [];
+// новина зі старого сайту, яка повторює допис із Facebook (той самий день і заголовок), не надсилається вдруге
+const key = (d, t) => String(d || "").slice(0, 10) + "|" + String(t || "").toLowerCase().replace(/[^0-9a-zа-яіїєґ]+/g, "").slice(0, 24);
+const fbKeys = new Set(fb.map((p) => key(p.date, String(p.text || "").trim().split(/\n+/)[0])));
 
 const all = [
   ...fb.filter((p) => !p.legacy && !p.sample).map((p) => {
@@ -34,6 +38,8 @@ const all = [
     const id = "m" + hash((m.date || "") + "|" + m.title);
     return { id: "man:" + id, date: m.date, title: m.title, body: (m.text || "").trim(), image: m.image || (m.gallery && m.gallery[0]) || "", link: SITE ? `${SITE}/#post-${id}` : "" };
   }),
+  ...archive.filter((a) => a && a.title && !fbKeys.has(key(a.date, a.title))).map((a) => (
+    { id: "old:" + a.id, date: a.date, title: a.title, body: String(a.text || "").trim(), image: (a.images || [])[0] || "", link: SITE ? `${SITE}/#post-${a.id}` : "" })),
 ];
 
 const notifiedPath = path.join(root, "data", "notified.json");
