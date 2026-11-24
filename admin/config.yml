@@ -1,14 +1,14 @@
 # Адмін-панель сайту ліцею (Sveltia CMS, сумісна з Decap CMS).
-# Адреса панелі: https://ВАШ-САЙТ/admin/
+# Адреса панелі: https://ostolosh.github.io/kushnytsia-lyceum/admin/
 
 backend:
   name: github
   repo: ostolosh/kushnytsia-lyceum
   branch: main
-  # base_url: https://ВАШ-ВОРКЕР.workers.dev  # адреса сервісу входу, див. README. Поки її немає, входьте кнопкою «Sign in with Token» (токен GitHub)
+  base_url: https://sveltia-cms-auth.ostolosh.workers.dev  # сервіс входу через GitHub (Cloudflare Workers)
 
 locale: uk
-site_url: https://ВАШ-САЙТ
+site_url: https://ostolosh.github.io/kushnytsia-lyceum/
 media_folder: uploads/files       # куди потрапляють завантажені фото й документи
 public_folder: uploads/files
 
