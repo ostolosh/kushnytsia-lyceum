@@ -398,5 +398,12 @@
  "Переглянути відео у Facebook": "Watch the video on Facebook",
  "Оновлено {d}": "Updated {d}",
  "Усі фото у Facebook": "All photos on Facebook",
- "Відкрити новину: {t}": "Open post: {t}"
+ "Відкрити новину: {t}": "Open post: {t}",
+ "Тиждень": "Week",
+ "Варіант 1": "Variant 1",
+ "Варіант 2": "Variant 2",
+ "Цей тиждень — варіант {v}": "This week is variant {v}",
+ "Наступний навчальний тиждень — варіант {v}": "Next school week is variant {v}",
+ "інший тиждень: {s}": "other week: {s}",
+ "немає уроку": "no lesson"
 }
