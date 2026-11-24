@@ -357,7 +357,7 @@ collections:
               - label: Освітня галузь
                 name: area
                 widget: select
-                options: [Мовно-літературна, Математична, Природнича, "Соціальна і здоров'язбережна", Громадянська та історична, Технологічна, Інформатична, Мистецька, Фізкультурна, Інше]
+                options: [Мовно-літературна, Математична, Природнича, "Соціальна і здоров'язбережувальна", Громадянська та історична, Технологічна, Інформатична, Мистецька, Фізкультурна, Інше]
               - { label: Номер кабінету, name: room, widget: string, required: false }
               - { label: Назва в розкладі, name: scheduleRoom, widget: string, required: false, hint: "Як кабінет записаний у колонці «кабінет» розкладу (data/schedule.csv). Тоді в картці буде видно, які класи тут навчаються." }
               - { label: Кількість робочих місць, name: seats, widget: number, value_type: int, min: 0, required: false }
@@ -390,3 +390,10 @@ collections:
           - { label: Посилання на Telegram-канал, name: telegram, widget: string, required: false }
           - { label: Посилання на Viber-канал, name: viber, widget: string, required: false }
           - { label: Сторінка у Facebook, name: facebook, widget: string, required: false }
+          - label: Кольорова тема сайту
+            name: palette
+            widget: select
+            default: forest
+            required: false
+            hint: "Щоб спершу подивитися всі теми, відкрийте сайт з ?themes у кінці адреси."
+            options: [{ label: "Ліс (зелена)", value: forest }, { label: "Небо (синьо-жовта)", value: sky }, { label: "Вишиванка (червона)", value: vyshyvanka }, { label: "Глина (теракотова)", value: clay }, { label: "Чорнило (фіолетова)", value: ink }]
