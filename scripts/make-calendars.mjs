@@ -46,6 +46,20 @@ const VTZ = [
   "BEGIN:DAYLIGHT", "DTSTART:19700329T030000", "TZOFFSETFROM:+0200", "TZOFFSETTO:+0300", "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU", "TZNAME:EEST", "END:DAYLIGHT",
   "END:VTIMEZONE",
 ];
+// ---- тижні за варіантами: «Предмет 1 / Предмет 2» чергуються щотижня, тижні канікул не рахуються
+const DAY = 86400000;
+const inTerm = (d) => (data.terms || []).some((t) => d >= parse(t.from) && d <= parse(t.to));
+const isSchoolDay = (d) => { const w = d.getUTCDay(); return w >= 1 && w <= 5 && inTerm(d) && !holidayDays.has(ymd(d)); };
+const mondayOf = (d) => new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * DAY);
+const isSchoolWeek = (mon) => [0, 1, 2, 3, 4].some((i) => isSchoolDay(new Date(mon.getTime() + i * DAY)));
+const weekVariant = new Map(); // понеділок → варіант
+if ((data.terms || []).length) {
+  const start = mondayOf(parse(data.terms[0].from)), end = parse(data.terms[data.terms.length - 1].to);
+  let n = data.firstVariant === 2 ? 1 : 0;
+  for (let m = start; m <= end; m = new Date(m.getTime() + 7 * DAY)) if (isSchoolWeek(m)) { weekVariant.set(ymd(m), (n % 2) + 1); n++; }
+}
+const variantsOf = (s) => { const p = String(s).split(" / "); return p.length === 2 ? p.map((x) => x.trim()) : null; };
+
 const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
 const BYDAY = ["", "MO", "TU", "WE", "TH", "FR"];
 let files = 0;
@@ -67,6 +81,22 @@ for (const cls of data.classes) {
       lessons.forEach((l, i) => {
         const bell = data.bells[i];
         if (!l || !bell) return;
+        const vs = variantsOf(l.s);
+        if (vs) {
+          // урок за варіантами: окрема подія на кожну дату з предметом свого тижня
+          for (let d = new Date(first); d <= to; d = new Date(d.getTime() + 7 * DAY)) {
+            if (!isSchoolDay(d)) continue;
+            const subj = vs[(weekVariant.get(ymd(mondayOf(d))) || 1) - 1];
+            if (!subj || subj === "—") continue;
+            L.push("BEGIN:VEVENT", `UID:${cls.id}-t${ti}-d${day}-l${i + 1}-${ymd(d)}@kushnytsia-lyceum`, `DTSTAMP:${stamp}`,
+              `DTSTART;TZID=${TZ}:${ymd(d)}T${hm(bell[0])}`, `DTEND;TZID=${TZ}:${ymd(d)}T${hm(bell[1])}`,
+              `SUMMARY:${esc(`${i + 1}. ${subj}`)}`);
+            if (l.r) L.push(`LOCATION:${esc("Кабінет " + l.r)}`);
+            if (l.t) L.push(`DESCRIPTION:${esc(l.t)}`);
+            L.push("END:VEVENT");
+          }
+          return;
+        }
         L.push("BEGIN:VEVENT",
           `UID:${cls.id}-t${ti}-d${day}-l${i + 1}@kushnytsia-lyceum`,
           `DTSTAMP:${stamp}`,

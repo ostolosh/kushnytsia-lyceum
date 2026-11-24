@@ -37,7 +37,21 @@
    "girls": 0
   },
   {
+   "name": "5-Б",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  },
+  {
    "name": "6-А",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  },
+  {
+   "name": "6-Б",
    "teacher": "",
    "students": 0,
    "boys": 0,
@@ -58,7 +72,21 @@
    "girls": 0
   },
   {
+   "name": "8-Б",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  },
+  {
    "name": "9-А",
+   "teacher": "",
+   "students": 0,
+   "boys": 0,
+   "girls": 0
+  },
+  {
+   "name": "9-Б",
    "teacher": "",
    "students": 0,
    "boys": 0,
