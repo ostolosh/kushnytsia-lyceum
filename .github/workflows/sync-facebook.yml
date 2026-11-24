@@ -15,7 +15,7 @@ permissions:
   pages: write
 
 concurrency:
-  group: sync-facebook
+  group: content-sync
   cancel-in-progress: false
 
 jobs:
