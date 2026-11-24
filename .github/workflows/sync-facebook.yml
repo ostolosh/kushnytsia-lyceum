@@ -32,6 +32,7 @@ jobs:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
           FB_API_VERSION: ${{ vars.FB_API_VERSION }}
           FB_PAGES: ${{ github.event.inputs.pages || '2' }}
+          FB_PHOTOS: ${{ vars.FB_PHOTOS }}
         run: node scripts/sync-facebook.mjs
       - name: Надіслати нові новини в месенджери
         env:

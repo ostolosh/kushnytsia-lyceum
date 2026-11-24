@@ -6,10 +6,10 @@
 //   FB_API_VERSION  версія Graph API, напр. v23.0 (без неї береться версія за замовчуванням застосунку)
 //   FB_LIMIT        скільки публікацій на сторінку запиту (25)
 //   FB_PAGES        скільки сторінок запиту гортати за один запуск (2; для першого заповнення можна 20)
-//   FB_KEEP         скільки публікацій зберігати в posts.json (300)
-//   FB_PHOTOS       скільки фото зберігати з однієї публікації (6)
+//   FB_KEEP         скільки публікацій зберігати в posts.json (500)
+//   FB_PHOTOS       скільки фото зберігати з однієї публікації (1: головне фото; решта дивляться у Facebook)
 
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir, readdir, unlink } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
@@ -18,8 +18,8 @@ const TOKEN = (process.env.FB_PAGE_TOKEN || "").trim();
 const VERSION = (process.env.FB_API_VERSION || "").trim();
 const LIMIT = Number(process.env.FB_LIMIT || 25);
 const PAGES = Number(process.env.FB_PAGES || 2);
-const KEEP = Number(process.env.FB_KEEP || 300);
-const PHOTOS = Number(process.env.FB_PHOTOS || 6);
+const KEEP = Number(process.env.FB_KEEP || 500);
+const PHOTOS = Math.max(1, Number(process.env.FB_PHOTOS || 1));
 
 if (!PAGE_ID || !TOKEN) {
   // Без ключів просто пропускаємо, щоб щоденний запуск не «падав», доки їх не додано.
@@ -69,7 +69,7 @@ function photoUrls(p) {
     else add(a.media);
   }
   if (!out.length && p.full_picture) out.push(p.full_picture);
-  return out.slice(0, PHOTOS);
+  return out;
 }
 
 function textOf(p) {
@@ -104,7 +104,7 @@ async function main() {
   let added = 0, updated = 0;
   for (const p of data) {
     const text = textOf(p);
-    const urls = photoUrls(p);
+    const all = photoUrls(p), urls = all.slice(0, PHOTOS);
     if (!text && !urls.length) continue; // порожні службові події пропускаємо
     const prev = known.get(p.id);
     const safeId = p.id.replace(/[^\w-]/g, "_");
@@ -120,6 +120,7 @@ async function main() {
     const video = (p.attachments?.data || []).some((a) => /video/.test(a.media_type || "")) || /video/.test(p.status_type || "");
     const item = { id: p.id, date: p.created_time, text, image: gallery[0] || "", gallery, url: p.permalink_url || "" };
     if (video) item.video = true;
+    if (all.length > gallery.length) item.morePhotos = all.length; // решта фото лише у Facebook
     if (!prev) added++;
     else if (prev.text !== text) updated++;
     known.set(p.id, item);
@@ -136,6 +137,14 @@ async function main() {
     posts,
   };
   await writeFile(postsFile, JSON.stringify(out, null, 2) + "\n");
+
+  // прибираємо фото публікацій, які вже випали зі списку або більше не використовуються
+  const used = new Set(posts.flatMap((q) => (q.gallery || [q.image]).filter(Boolean).map((f) => path.basename(f))));
+  let removed = 0;
+  for (const f of await readdir(imagesDir)) {
+    if (!used.has(f) && /\.(jpe?g|png|webp)$/i.test(f)) { await unlink(path.join(imagesDir, f)); removed++; }
+  }
+  if (removed) console.log(`Видалено фото, які більше не потрібні: ${removed}.`);
   console.log(`Готово: ${posts.length} публікацій, нових: ${added}, змінених: ${updated}.`);
 }
 
