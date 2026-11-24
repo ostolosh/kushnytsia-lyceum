@@ -32,16 +32,24 @@
 
 ## Підключення Facebook (один раз)
 
-1. Відкрийте [developers.facebook.com](https://developers.facebook.com) → **Create App** (тип Business).
-2. Додайте дозволи `pages_show_list` і `pages_read_engagement`. Для читання публічних постів може знадобитися `Page Public Content Access`.
-3. У **Graph API Explorer** оберіть свій застосунок, згенеруйте User token, потім обміняйте його на довготривалий (long-lived), а потім отримайте **Page access token** через запит `GET /me/accounts`. Токен сторінки, отриманий з довготривалого токена, не має терміну дії.
-4. Знайдіть **ID сторінки** у «Про сторінку» (Page transparency) або у відповіді `/me/accounts`.
-5. У репозиторії GitHub: **Settings → Secrets and variables → Actions → New repository secret**:
-   - `FB_PAGE_ID` = ID сторінки
-   - `FB_PAGE_TOKEN` = токен сторінки
-6. Відкрийте вкладку **Actions → Синхронізація новин з Facebook → Run workflow**, щоб перевірити.
+Сайт сам забирає дописи зі сторінки ліцею у Facebook кожні 2 години (з 6:23 до 20:23). Для цього потрібні два секрети: **ID сторінки** і **токен сторінки**, який не має терміну дії. Усе робиться в браузері, від імені адміністратора сторінки.
+
+1. **Застосунок.** Відкрийте [developers.facebook.com/apps](https://developers.facebook.com/apps) → **Create app** → тип **Other**, далі **Business** (або сценарій «Manage everything on your Page»). Назва довільна, наприклад «Сайт ліцею». Застосунок може лишатися в режимі розробки (Development): для власної сторінки цього достатньо.
+2. **Короткий токен.** Відкрийте [Graph API Explorer](https://developers.facebook.com/tools/explorer/). Праворуч оберіть свій застосунок, у **Permissions** додайте `pages_show_list` і `pages_read_engagement`, натисніть **Generate Access Token** і дозвольте доступ до сторінки ліцею.
+3. **Довгий токен.** Натисніть ⓘ біля токена → **Open in Access Token Tool** → унизу **Extend Access Token**. Скопіюйте новий (довгий) токен.
+4. **Токен сторінки.** Знову в Graph API Explorer вставте довгий токен у поле **Access Token** і виконайте запит `me/accounts`. У відповіді знайдіть сторінку ліцею: `id` — це **ID сторінки**, `access_token` — **токен сторінки**. Токен сторінки, отриманий з довгого токена, не має терміну дії (у Access Token Tool буде «Expires: Never»).
+5. **Секрети на GitHub.** Репозиторій → **Settings → Secrets and variables → Actions → New repository secret**:
+   - `FB_PAGE_ID` — ID сторінки;
+   - `FB_PAGE_TOKEN` — токен сторінки.
+6. **Перший запуск.** **Actions → Синхронізація новин з Facebook → Run workflow**, у полі кількості сторінок поставте `20`, щоб одразу підтягнути старіші дописи. Далі все йде автоматично.
 
 Токен нікому не передавайте й не вставляйте в код, лише в Secrets.
+
+**Що забирається:** текст, усі фото допису (до 6, зберігаються на сайті назавжди), посилання на допис; для відео — кнопка «Переглянути відео у Facebook». На сайті перший рядок допису стає заголовком.
+
+**Якщо синхронізація зламалась** (GitHub надішле листа про невдалий запуск): найчастіше токен став недійсним, бо змінили пароль Facebook або прибрали адміністратора сторінки. Повторіть кроки 2–5. Текст помилки видно у вкладці **Actions**.
+
+**Додатково:** змінна `FB_API_VERSION` (Settings → Variables), наприклад `v23.0`, фіксує версію Graph API; без неї береться версія застосунку.
 
 ## Публікація на GitHub Pages
 
