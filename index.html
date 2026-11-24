@@ -262,6 +262,9 @@ a.chip { display: inline-flex; align-items: center; text-decoration: none; }
 .carbox .dots button::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
 .carbox .dots button.on::before { background: var(--accent); }
 .modal .lessons { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.post .tap { cursor: pointer; }
+.post h3.tap:hover { color: var(--accent); }
+.post .tap:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .modal img.big { width: 100%; max-height: 70vh; object-fit: contain; border-radius: 12px; background: var(--surface); display: block; }
 .form { display: grid; gap: 14px; max-width: 640px; }
 .form label { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
@@ -3580,7 +3583,8 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
  "Відкрити у Facebook": "Open on Facebook",
  "Переглянути відео у Facebook": "Watch the video on Facebook",
  "Оновлено {d}": "Updated {d}",
- "Усі фото у Facebook": "All photos on Facebook"
+ "Усі фото у Facebook": "All photos on Facebook",
+ "Відкрити новину: {t}": "Open post: {t}"
 }</script>
 <!--/I18N-->
 <script>
@@ -4196,6 +4200,12 @@ window.__sheetOr = function (name, fallback) {
     var t = document.createElement("time"); t.dateTime = isNaN(d) ? "" : d.toISOString(); t.textContent = isNaN(d) ? "" : fmt.format(d); b.appendChild(t);
     var h = document.createElement("h3"); h.textContent = title; b.appendChild(h);
     if (body) { var pp = document.createElement("p"); pp.textContent = body; b.appendChild(pp); }
+    if (p.manual) {
+      // на телефоні зручно відкривати новину дотиком до фото або заголовка
+      [ph, h].forEach(function (el) { el.classList.add("tap"); el.setAttribute("role", "button"); el.tabIndex = 0; el.setAttribute("aria-label", _tf("Відкрити новину: {t}", { t: title }));
+        el.addEventListener("click", function () { openPost(p); });
+        el.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPost(p); } }); });
+    }
     if (p.manual) { var bt = document.createElement("button"); bt.type = "button"; bt.className = "more"; bt.textContent = _t("Читати далі →"); bt.style.color = "var(--accent)"; bt.addEventListener("click", function () { openPost(p); }); b.appendChild(bt); }
     else if (p.url) { var l = document.createElement("a"); l.className = "more"; l.href = p.url; l.target = "_blank"; l.rel = "noopener"; l.textContent = p.legacy ? _t("Повний текст на старому сайті →") : _t("Читати у Facebook →"); b.appendChild(l); }
     a.appendChild(ph); a.appendChild(b); return a;

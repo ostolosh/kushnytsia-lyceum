@@ -6,7 +6,7 @@
 //   FB_API_VERSION  версія Graph API, напр. v23.0 (без неї береться версія за замовчуванням застосунку)
 //   FB_LIMIT        скільки публікацій на сторінку запиту (25)
 //   FB_PAGES        скільки сторінок запиту гортати за один запуск (2; для першого заповнення можна 20)
-//   FB_KEEP         скільки публікацій зберігати в posts.json (300)
+//   FB_KEEP         скільки публікацій зберігати в posts.json (500)
 //   FB_PHOTOS       скільки фото зберігати з однієї публікації (1: головне фото; решта дивляться у Facebook)
 
 import { readFile, writeFile, mkdir, readdir, unlink } from "node:fs/promises";
@@ -18,7 +18,7 @@ const TOKEN = (process.env.FB_PAGE_TOKEN || "").trim();
 const VERSION = (process.env.FB_API_VERSION || "").trim();
 const LIMIT = Number(process.env.FB_LIMIT || 25);
 const PAGES = Number(process.env.FB_PAGES || 2);
-const KEEP = Number(process.env.FB_KEEP || 300);
+const KEEP = Number(process.env.FB_KEEP || 500);
 const PHOTOS = Math.max(1, Number(process.env.FB_PHOTOS || 1));
 
 if (!PAGE_ID || !TOKEN) {
