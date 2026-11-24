@@ -1,15 +1,16 @@
 {
- "formEndpoint": "",
- "formAccessKey": "",
- "email": "kyshnica-soh@ukr.net",
- "phone": "(031-44) 73-393",
- "telegram": "",
- "viber": "",
- "facebook": "",
- "sheets": {
-  "events": "",
-  "polls": "",
-  "menu": "",
-  "announcement": ""
- }
+  "formEndpoint": "",
+  "formAccessKey": "",
+  "email": "kyshnica-soh@ukr.net",
+  "phone": "(031-44) 73-393",
+  "telegram": "",
+  "viber": "",
+  "facebook": "",
+  "palette": "sky",
+  "sheets": {
+    "announcement": "",
+    "events": "",
+    "menu": "",
+    "polls": ""
+  }
 }
