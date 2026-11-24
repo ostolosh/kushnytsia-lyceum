@@ -379,17 +379,10 @@ collections:
     label: Налаштування сайту
     files:
       - name: site
-        label: Форма звернень і посилання
+        label: Вигляд сайту, контакти й форма
         file: site.json
         format: json
         fields:
-          - { label: Адреса форми (Formspree або Web3Forms), name: formEndpoint, widget: string, required: false }
-          - { label: Ключ форми (access key), name: formAccessKey, widget: string, required: false }
-          - { label: Пошта ліцею, name: email, widget: string }
-          - { label: Телефон, name: phone, widget: string }
-          - { label: Посилання на Telegram-канал, name: telegram, widget: string, required: false }
-          - { label: Посилання на Viber-канал, name: viber, widget: string, required: false }
-          - { label: Сторінка у Facebook, name: facebook, widget: string, required: false }
           - label: Кольорова тема сайту
             name: palette
             widget: select
@@ -397,3 +390,10 @@ collections:
             required: false
             hint: "Щоб спершу подивитися всі теми, відкрийте сайт з ?themes у кінці адреси."
             options: [{ label: "Ліс (зелена)", value: forest }, { label: "Небо (синьо-жовта)", value: sky }, { label: "Вишиванка (червона)", value: vyshyvanka }, { label: "Глина (теракотова)", value: clay }, { label: "Чорнило (фіолетова)", value: ink }]
+          - { label: Адреса форми (Formspree або Web3Forms), name: formEndpoint, widget: string, required: false }
+          - { label: Ключ форми (access key), name: formAccessKey, widget: string, required: false }
+          - { label: Пошта ліцею, name: email, widget: string }
+          - { label: Телефон, name: phone, widget: string }
+          - { label: Посилання на Telegram-канал, name: telegram, widget: string, required: false }
+          - { label: Посилання на Viber-канал, name: viber, widget: string, required: false }
+          - { label: Сторінка у Facebook, name: facebook, widget: string, required: false }
