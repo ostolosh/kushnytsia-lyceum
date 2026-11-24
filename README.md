@@ -136,7 +136,7 @@ FB_PAGE_ID=... FB_PAGE_TOKEN=... node scripts/sync-facebook.mjs
 
 **Налаштування (один раз)**
 1. У `admin/config.yml` замініть `repo` на свій репозиторій (`логін/назва`), `site_url` на адресу сайту.
-2. Панель входить через GitHub, для цього потрібен безкоштовний сервіс авторизації. Найпростіше розгорнути [sveltia-cms-auth](https://github.com/sveltia/sveltia-cms-auth) на Cloudflare Workers за інструкцією в його README: створіть OAuth App у GitHub (Settings → Developer settings → OAuth Apps), де callback це адреса воркера з `/callback`, а потім додайте Client ID і Secret у змінні воркера. Адресу воркера вставте в `base_url` у `config.yml`.
+2. Панель входить через GitHub, для цього потрібен безкоштовний сервіс авторизації. Найпростіше розгорнути [sveltia-cms-auth](https://github.com/sveltia/sveltia-cms-auth) на Cloudflare Workers за інструкцією в його README: створіть OAuth App у GitHub (Settings → Developer settings → OAuth Apps), де callback це адреса воркера з `/callback`, а потім додайте Client ID і Secret у змінні воркера. Адресу воркера вставте в `base_url` у `config.yml`. **Налаштовано:** сервіс `https://sveltia-cms-auth.ostolosh.workers.dev` (Cloudflare, акаунт ostolosh), OAuth App «Сайт Кушницького ліцею» на GitHub; змінні воркера `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `ALLOWED_DOMAINS=ostolosh.github.io`. Щоб людина могла увійти, додайте її акаунт GitHub у репозиторій: Settings → Collaborators.
 3. Кожному, хто має редагувати сайт, дайте доступ до репозиторію: **Settings → Collaborators** з правом Write. Усі зміни записуються в історію з іменем автора.
 
 **Чого панель не робить**: розклад уроків редагується файлом `data/schedule.csv`, а Facebook-пости оновлюються самі за розкладом.
