@@ -112,7 +112,6 @@
  "Педагогічний колектив": "Teaching staff",
  "Перерва після": "Break after",
  "Перерва. Далі {n} урок": "Break. Next: lesson {n}",
- "По класу": "By class",
  "Повний текст на старому сайті →": "Full text on the old website →",
  "Повідомлення": "Message",
  "Погоджуюся на обробку моїх персональних даних для відповіді на звернення.": "I agree to the processing of my personal data in order to receive a reply.",
@@ -147,7 +146,6 @@
  "Розклад у вашому календарі": "Timetable in your calendar",
  "Розклад уроків": "Lesson timetable",
  "Розклад уроків Кушницького ліцею": "Kushnytsia Lyceum lesson timetable",
- "Розклад уроків по класах": "Lesson timetable by class",
  "Розклад ще не додано.": "The timetable has not been added yet.",
  "Розклад і навчання": "Timetable and study",
  "Рівень": "Level",
@@ -327,7 +325,6 @@
  "Громада": "Community",
  "Район": "District",
  "Область": "Region",
- "Соціальна і здоров'язбережна": "Social and health",
  "Громадянська та історична": "Civic and historical",
  "Фізкультурна": "Physical education",
  "Терміново": "Urgent",
@@ -419,5 +416,8 @@
  "Небо": "Sky",
  "Вишиванка": "Vyshyvanka",
  "Глина": "Clay",
- "Чорнило": "Ink"
+ "Чорнило": "Ink",
+ "Розклад уроків за класами": "Lesson timetable by class",
+ "За класом": "By class",
+ "Соціальна і здоров'язбережувальна": "Social and health"
 }
