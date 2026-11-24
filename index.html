@@ -17,6 +17,11 @@
   var d = document.documentElement, th = null, lg = null, m = /[?&]lang=(en|uk)\b/.exec(location.search);
   try { th = localStorage.getItem("lyceum-theme"); lg = localStorage.getItem("lyceum-lang"); } catch (e) {}
   if (th === "light" || th === "dark") d.setAttribute("data-theme", th);
+  // кольорова тема: ?palette=… для перегляду, інакше збережена з налаштувань сайту
+  var pm = /[?&]palette=([a-z]+)/.exec(location.search), pal = null;
+  try { pal = localStorage.getItem("lyceum-palette"); } catch (e) {}
+  if (pm) pal = pm[1];
+  if (pal && pal !== "forest") d.setAttribute("data-palette", pal);
   if (m) { lg = m[1]; try { localStorage.setItem("lyceum-lang", lg); } catch (e) {} }
   window.__lang = lg === "en" ? "en" : "uk";
   d.lang = window.__lang;
@@ -56,6 +61,25 @@
   --bg: #0e1613; --surface: #15201b; --ink: #e7efe9; --muted: #9fb0a6; --line: #26352d;
   --accent: #3fc79a; --accent-ink: #06241a; --sun-ink: #3a2a00; --alert: #ff8a7a; --alert-ink: #3b0a05; color-scheme: dark;
 }
+/* кольорові теми: обирається в адмін-панелі (Налаштування сайту), перегляд — ?themes */
+:root[data-palette="sky"] { --bg: #f3f6fa; --surface: #ffffff; --ink: #10203a; --muted: #52607a; --line: #d8e0eb; --accent: #1d5fa8; --accent-ink: #ffffff; --sun: #ffd23f; --sun-ink: #3a2a00; }
+@media (prefers-color-scheme: dark) { :root[data-palette="sky"]:not([data-theme="light"]) { --bg: #0c1420; --surface: #131d2c; --ink: #e6edf7; --muted: #9aabc4; --line: #24324a; --accent: #6aa8ff; --accent-ink: #04203f; color-scheme: dark; } }
+:root[data-palette="sky"][data-theme="dark"] { --bg: #0c1420; --surface: #131d2c; --ink: #e6edf7; --muted: #9aabc4; --line: #24324a; --accent: #6aa8ff; --accent-ink: #04203f; color-scheme: dark; }
+:root[data-palette="vyshyvanka"] { --bg: #f8f4ef; --surface: #ffffff; --ink: #2a1414; --muted: #6b5552; --line: #eadcd4; --accent: #a4252c; --accent-ink: #ffffff; --sun: #e8b04a; --sun-ink: #3a2400; }
+@media (prefers-color-scheme: dark) { :root[data-palette="vyshyvanka"]:not([data-theme="light"]) { --bg: #160d0d; --surface: #201414; --ink: #f3e8e6; --muted: #bfa5a2; --line: #3a2626; --accent: #ff8a80; --accent-ink: #3b0807; color-scheme: dark; } }
+:root[data-palette="vyshyvanka"][data-theme="dark"] { --bg: #160d0d; --surface: #201414; --ink: #f3e8e6; --muted: #bfa5a2; --line: #3a2626; --accent: #ff8a80; --accent-ink: #3b0807; color-scheme: dark; }
+:root[data-palette="clay"] { --bg: #f7f3ee; --surface: #ffffff; --ink: #2b1d14; --muted: #6e5d50; --line: #e7ddd2; --accent: #a8471f; --accent-ink: #ffffff; --sun: #e9b949; --sun-ink: #3a2600; }
+@media (prefers-color-scheme: dark) { :root[data-palette="clay"]:not([data-theme="light"]) { --bg: #15100c; --surface: #1f1812; --ink: #f2e9e1; --muted: #bda998; --line: #362a20; --accent: #f0956a; --accent-ink: #3a1606; color-scheme: dark; } }
+:root[data-palette="clay"][data-theme="dark"] { --bg: #15100c; --surface: #1f1812; --ink: #f2e9e1; --muted: #bda998; --line: #362a20; --accent: #f0956a; --accent-ink: #3a1606; color-scheme: dark; }
+:root[data-palette="ink"] { --bg: #f4f4fa; --surface: #ffffff; --ink: #16162e; --muted: #5a5a78; --line: #dcdcea; --accent: #4338ca; --accent-ink: #ffffff; --sun: #f5b83d; --sun-ink: #3a2600; }
+@media (prefers-color-scheme: dark) { :root[data-palette="ink"]:not([data-theme="light"]) { --bg: #0f0f1c; --surface: #171729; --ink: #e9e9f7; --muted: #a3a3c2; --line: #2a2a44; --accent: #a5a1ff; --accent-ink: #15104a; color-scheme: dark; } }
+:root[data-palette="ink"][data-theme="dark"] { --bg: #0f0f1c; --surface: #171729; --ink: #e9e9f7; --muted: #a3a3c2; --line: #2a2a44; --accent: #a5a1ff; --accent-ink: #15104a; color-scheme: dark; }
+.palpick { position: fixed; right: 12px; bottom: 12px; z-index: 60; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; padding: 10px 12px; box-shadow: 0 8px 30px rgba(0,0,0,.18); font: 500 13px var(--f-body); max-width: calc(100vw - 24px); }
+.palpick b { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.palpick .row { display: flex; flex-wrap: wrap; gap: 6px; }
+.palpick button { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); font: 600 13px var(--f-body); cursor: pointer; }
+.palpick button[aria-pressed="true"] { border-color: var(--accent); }
+.palpick i { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 76px; }
 body {
@@ -4202,7 +4226,14 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
  "варіант {v}": "variant {v}",
  "(не поточний тиждень)": "(not the current week)",
  "Повернутися до поточного": "Back to current",
- "(зараз вихідні або канікули)": "(weekend or holidays now)"
+ "(зараз вихідні або канікули)": "(weekend or holidays now)",
+ "Перегляд кольорових тем (бачите лише ви)": "Colour theme preview (only you see this)",
+ "✓ — тема, обрана в адмін-панелі": "✓ — theme chosen in the admin panel",
+ "Ліс": "Forest",
+ "Небо": "Sky",
+ "Вишиванка": "Vyshyvanka",
+ "Глина": "Clay",
+ "Чорнило": "Ink"
 }</script>
 <!--/I18N-->
 <script>
@@ -5546,6 +5577,25 @@ window.__sheetOr = function (name, fallback) {
 
   // ---------- налаштування сайту й форма звернень
   var site = {};
+  // ---------- кольорова тема сайту
+  var PALETTES = [["forest", "Ліс", "#0b6b50"], ["sky", "Небо", "#1d5fa8"], ["vyshyvanka", "Вишиванка", "#a4252c"], ["clay", "Глина", "#a8471f"], ["ink", "Чорнило", "#4338ca"]];
+  function setPalette(k) { var d = document.documentElement; if (k && k !== "forest") d.setAttribute("data-palette", k); else d.removeAttribute("data-palette"); }
+  window.loadData("site.json").then(function (s) {
+    var chosen = (s && s.palette) || "forest", preview = /[?&]palette=([a-z]+)/.exec(location.search);
+    if (!preview) setPalette(chosen);
+    try { localStorage.setItem("lyceum-palette", chosen); } catch (e) {}
+    if (/[?&]themes\b/.test(location.search)) {
+      var box = el("div", "palpick"), row = el("div", "row"), cur = preview ? preview[1] : chosen;
+      box.appendChild(el("b", "", _t("Перегляд кольорових тем (бачите лише ви)")));
+      PALETTES.forEach(function (p) {
+        var b = el("button"); b.type = "button"; var dot = el("i"); dot.style.background = p[2]; b.appendChild(dot); b.appendChild(document.createTextNode(_t(p[1]) + (p[0] === chosen ? " ✓" : "")));
+        b.setAttribute("aria-pressed", String(p[0] === cur));
+        b.addEventListener("click", function () { setPalette(p[0]); [].forEach.call(row.children, function (x) { x.setAttribute("aria-pressed", "false"); }); b.setAttribute("aria-pressed", "true"); });
+        row.appendChild(b);
+      });
+      box.appendChild(row); box.appendChild(el("b", "", _t("✓ — тема, обрана в адмін-панелі"))); document.body.appendChild(box);
+    }
+  }).catch(function () {});
   window.loadData("site.json").then(function (s) {
     site = s || {};
     var dl = $("contactList");

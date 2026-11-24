@@ -412,5 +412,12 @@
  "варіант {v}": "variant {v}",
  "(не поточний тиждень)": "(not the current week)",
  "Повернутися до поточного": "Back to current",
- "(зараз вихідні або канікули)": "(weekend or holidays now)"
+ "(зараз вихідні або канікули)": "(weekend or holidays now)",
+ "Перегляд кольорових тем (бачите лише ви)": "Colour theme preview (only you see this)",
+ "✓ — тема, обрана в адмін-панелі": "✓ — theme chosen in the admin panel",
+ "Ліс": "Forest",
+ "Небо": "Sky",
+ "Вишиванка": "Vyshyvanka",
+ "Глина": "Clay",
+ "Чорнило": "Ink"
 }
