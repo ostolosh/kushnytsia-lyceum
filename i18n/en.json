@@ -405,5 +405,12 @@
  "Цей тиждень — варіант {v}": "This week is variant {v}",
  "Наступний навчальний тиждень — варіант {v}": "Next school week is variant {v}",
  "інший тиждень: {s}": "other week: {s}",
- "немає уроку": "no lesson"
+ "немає уроку": "no lesson",
+ "Цей тиждень": "This week",
+ "Наступний": "Next week",
+ "Найближчий": "Upcoming week",
+ "варіант {v}": "variant {v}",
+ "(не поточний тиждень)": "(not the current week)",
+ "Повернутися до поточного": "Back to current",
+ "(зараз вихідні або канікули)": "(weekend or holidays now)"
 }
