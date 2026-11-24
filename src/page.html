@@ -3568,7 +3568,8 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
  "Разом з архівом старого сайту: {n} публікацій.": "Including the old website archive: {n} posts.",
  "Відкрити у Facebook": "Open on Facebook",
  "Переглянути відео у Facebook": "Watch the video on Facebook",
- "Оновлено {d}": "Updated {d}"
+ "Оновлено {d}": "Updated {d}",
+ "Усі фото у Facebook": "All photos on Facebook"
 }</script>
 <!--/I18N-->
 <script>
@@ -4204,7 +4205,7 @@ window.__sheetOr = function (name, fallback) {
       var tx = String(window.__lang === "en" && q.text_en ? q.text_en : (q.text || "")).trim(), lines = tx.split(/\n+/), ti = lines.shift() || _t("Публікація"), bo = lines.join("\n\n");
       if (ti.length > 110) { bo = ti.slice(110) + (bo ? "\n\n" + bo : ""); ti = ti.slice(0, 110).replace(/\s+\S*$/, "") + "…"; }
       return { id: "fb" + String(q.id).replace(/\W/g, ""), date: q.date, title: ti, body: bo, text: tx, ua: window.__lang === "en" && !q.text_en, image: q.image || "", gallery: q.gallery || (q.image ? [q.image] : []),
-        links: q.url ? [{ url: q.url, label: q.video ? "Переглянути відео у Facebook" : "Відкрити у Facebook" }] : [], files: [], manual: true, fb: true };
+        links: q.url ? [{ url: q.url, label: q.video ? "Переглянути відео у Facebook" : q.morePhotos ? "Усі фото у Facebook" : "Відкрити у Facebook" }] : [], files: [], manual: true, fb: true };
     });
     POSTS = manual.concat(fb).sort(function (a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || new Date(b.date) - new Date(a.date); });
     if (!POSTS.length) grid.textContent = _t("Поки що немає публікацій."); else render();
