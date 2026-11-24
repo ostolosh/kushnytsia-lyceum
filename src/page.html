@@ -346,6 +346,9 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
 .sched td.free { color: var(--muted); }
 .sched td small.alt { font-style: italic; }
 .varnote { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.varnote b { color: var(--ink); }
+.varnote.other { color: var(--ink); background: color-mix(in srgb, var(--sun) 35%, var(--surface)); border-radius: 10px; padding: 6px 10px; display: inline-block; }
+.varnote button { font: inherit; color: var(--accent); background: none; border: 0; padding: 0 0 0 6px; text-decoration: underline; cursor: pointer; }
 .sched td.col-today, .sched th.col-today { background: color-mix(in srgb, var(--sun) 16%, var(--surface)); }
 .sched td.now { background: color-mix(in srgb, var(--sun) 42%, var(--surface)); font-weight: 600; box-shadow: inset 3px 0 0 var(--accent); }
 .general td, .general th { min-width: 118px; }
@@ -4181,7 +4184,14 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
  "Цей тиждень — варіант {v}": "This week is variant {v}",
  "Наступний навчальний тиждень — варіант {v}": "Next school week is variant {v}",
  "інший тиждень: {s}": "other week: {s}",
- "немає уроку": "no lesson"
+ "немає уроку": "no lesson",
+ "Цей тиждень": "This week",
+ "Наступний": "Next week",
+ "Найближчий": "Upcoming week",
+ "варіант {v}": "variant {v}",
+ "(не поточний тиждень)": "(not the current week)",
+ "Повернутися до поточного": "Back to current",
+ "(зараз вихідні або канікули)": "(weekend or holidays now)"
 }</script>
 <!--/I18N-->
 <script>
@@ -4504,8 +4514,8 @@ window.__sheetOr = function (name, fallback) {
       <div id="varBox" hidden>
         <span class="label" id="lblVar">Тиждень</span>
         <div class="seg" role="group" aria-labelledby="lblVar">
-          <button type="button" id="var1" aria-pressed="true">Варіант 1</button>
-          <button type="button" id="var2" aria-pressed="false">Варіант 2</button>
+          <button type="button" id="var1" aria-pressed="true">Цей тиждень</button>
+          <button type="button" id="var2" aria-pressed="false">Наступний</button>
         </div>
         <div class="varnote" id="varNote"></div>
       </div>
@@ -5028,7 +5038,7 @@ window.__sheetOr = function (name, fallback) {
   var TZ = "Europe/Kyiv";
   var SHORT = ["Пн", "Вт", "Ср", "Чт", "Пт"].map(_t);
   var $ = function (id) { return document.getElementById(id); };
-  var data = null, view = "general", day = 1, clsId = null, active = false, variant = 1, hasVariants = false;
+  var data = null, view = "general", day = 1, clsId = null, active = false, variant = 1, hasVariants = false, wsel = 0, weeks = [];
 
   // ---- тижні за варіантами: «Предмет 1 / Предмет 2» чергуються щотижня, тижні канікул не рахуються
   function ymdKyiv(d) { return new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d); }
@@ -5050,6 +5060,20 @@ window.__sheetOr = function (name, fallback) {
     var today = ymdKyiv(new Date()), d = today;
     for (var i = 0; i < 120; i++) { if (schoolDay(d)) return { v: variantOf(d), now: monday(d) === monday(today) }; d = addDays(d, 1); }
     return { v: 1, now: false };
+  }
+  // найближчий навчальний тиждень і наступний за ним, з датами й варіантами
+  function schoolWeeks() {
+    var today = ymdKyiv(new Date()), d = today, out = [];
+    for (var i = 0; i < 200 && out.length < 2; i++) {
+      if (schoolDay(d)) { var m = monday(d); out.push({ mon: m, v: variantOf(d), now: m === monday(today) }); d = addDays(m, 7); continue; }
+      d = addDays(d, 1);
+    }
+    return out;
+  }
+  function weekRange(w) {
+    var a = new Date(w.mon + "T12:00:00Z"), b = new Date(addDays(w.mon, 4) + "T12:00:00Z");
+    var f = function (x, o) { return x.toLocaleDateString(window.__lang === "en" ? "en-GB" : "uk-UA", Object.assign({ timeZone: "UTC" }, o)); };
+    return a.getUTCMonth() === b.getUTCMonth() ? f(a, { day: "numeric" }) + "–" + f(b, { day: "numeric", month: "long" }) : f(a, { day: "numeric", month: "short" }) + " – " + f(b, { day: "numeric", month: "short" });
   }
   function pick(l) {
     if (!l) return null;
@@ -5096,7 +5120,7 @@ window.__sheetOr = function (name, fallback) {
   }
 
   function renderGeneral() {
-    var n = nowKyiv(), cur = n.d === day ? currentLesson(n) : -1;
+    var n = wsel ? { t: 0, d: 0 } : nowKyiv(), cur = n.d === day ? currentLesson(n) : -1;
     var rows = Math.max(maxLessons(data.classes, String(day)), 1);
     var t = el("table", "general"), thead = el("thead"), hr = el("tr");
     var corner = el("th", "num", _t("Урок")); corner.scope = "col"; hr.appendChild(corner);
@@ -5117,7 +5141,7 @@ window.__sheetOr = function (name, fallback) {
   function renderClass() {
     var c = data.classes.filter(function (x) { return x.id === clsId; })[0];
     if (!c) return el("div", "empty", _t("Оберіть клас."));
-    var n = nowKyiv(), cur = currentLesson(n);
+    var n = wsel ? { t: 0, d: 0 } : nowKyiv(), cur = currentLesson(n);
     var rows = Math.max(maxLessons([c]), 1);
     var t = el("table", "byclass"), thead = el("thead"), hr = el("tr");
     var corner = el("th", "num", _t("Урок")); corner.scope = "col"; hr.appendChild(corner);
@@ -5162,9 +5186,20 @@ window.__sheetOr = function (name, fallback) {
     $("dayBox").hidden = view !== "general"; $("clsBox").hidden = view !== "class";
     $("varBox").hidden = !hasVariants;
     if (hasVariants) {
-      var cv = currentVariant();
-      $("var1").setAttribute("aria-pressed", String(variant === 1)); $("var2").setAttribute("aria-pressed", String(variant === 2));
-      $("varNote").textContent = cv.v ? _tf(cv.now ? "Цей тиждень — варіант {v}" : "Наступний навчальний тиждень — варіант {v}", { v: cv.v }) : "";
+      weeks = schoolWeeks();
+      var w = weeks[wsel] || weeks[0];
+      variant = (w && w.v) || 1;
+      $("var1").textContent = weeks[0] && !weeks[0].now ? _t("Найближчий") : _t("Цей тиждень");
+      $("var2").textContent = _t("Наступний");
+      $("var2").hidden = weeks.length < 2;
+      $("var1").setAttribute("aria-pressed", String(wsel === 0)); $("var2").setAttribute("aria-pressed", String(wsel === 1));
+      var note = $("varNote"); note.textContent = ""; note.className = "varnote" + (wsel ? " other" : "");
+      if (w) {
+        note.appendChild(document.createTextNode(weekRange(w) + " · "));
+        note.appendChild(el("b", "", _tf("варіант {v}", { v: w.v })));
+        if (wsel) { note.appendChild(document.createTextNode(" " + _t("(не поточний тиждень)"))); var back = el("button", "", _t("Повернутися до поточного")); back.type = "button"; back.addEventListener("click", function () { wsel = 0; render(); }); note.appendChild(back); }
+        else if (!w.now) note.appendChild(document.createTextNode(" " + _t("(зараз вихідні або канікули)")));
+      }
     }
     var n = nowKyiv();
     chips($("dayChips"), data.days.map(function (d, i) { return { label: SHORT[i], value: i + 1, title: _t(d), today: n.d === i + 1 }; }), day, function (v) { day = v; render(); });
@@ -5185,8 +5220,8 @@ window.__sheetOr = function (name, fallback) {
     else if (h === "rozklad") view = "general";
   }
   $("vGen").addEventListener("click", function () { view = "general"; setHash(); render(); });
-  $("var1").addEventListener("click", function () { variant = 1; render(); });
-  $("var2").addEventListener("click", function () { variant = 2; render(); });
+  $("var1").addEventListener("click", function () { wsel = 0; render(); });
+  $("var2").addEventListener("click", function () { wsel = 1; render(); });
   $("vCls").addEventListener("click", function () { view = "class"; if (!clsId) clsId = data.classes[0].id; setHash(); render(); });
   window.__sched = { show: function (on, h) { active = on; if (on) { readHash(h); if (data) render(); } } };
 
@@ -5198,7 +5233,7 @@ window.__sheetOr = function (name, fallback) {
     if (window.__addIdx) window.__addIdx(data.classes.map(function (c) { return { k: "Розклад", title: _tf("Розклад {c}", { c: c.name }), text: _t("уроки клас розклад"), hash: "rozklad-" + c.id }; }));
     if (data.updated) $("upd").textContent = _tf("Оновлено: {d}", { d: data.updated });
     hasVariants = data.classes.some(function (c) { return Object.keys(c.days).some(function (k) { return (c.days[k] || []).some(function (l) { return l && String(l.s).split(" / ").length === 2; }); }); });
-    if (hasVariants) variant = currentVariant().v || 1;
+    wsel = 0;
     var n = nowKyiv(); day = n.d || 1;
     var saved = store("lyceum-class");
     clsId = data.classes.some(function (c) { return c.id === saved; }) ? saved : data.classes[0].id;
