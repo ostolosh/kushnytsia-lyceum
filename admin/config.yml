@@ -219,13 +219,24 @@ collections:
         file: announcement.json
         format: json
         fields:
-          - { label: Показувати, name: active, widget: boolean, default: false }
-          - { label: Вид, name: level, widget: select, default: info, options: [{ label: Звичайне, value: info }, { label: Попередження, value: warning }, { label: Терміново, value: urgent }] }
-          - { label: Заголовок, name: title, widget: string, required: false }
-          - { label: Текст, name: text, widget: string, required: false }
-          - { label: Посилання, name: link, widget: string, required: false, hint: "Адреса сторінки або #розділ, наприклад #rozklad." }
-          - { label: Текст кнопки-посилання, name: linkText, widget: string, required: false }
-          - { label: Показувати до дати, name: until, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false, hint: "Після цієї дати банер зникне сам." }
+          - label: Оголошення
+            name: items
+            widget: list
+            label_singular: оголошення
+            summary: "{{title}}"
+            hint: "Усі увімкнені оголошення показуються в банері по черзі. Зніміть прапорець «Показувати», щоб сховати оголошення, не видаляючи його."
+            fields:
+              - { label: Показувати, name: active, widget: boolean, default: true, required: false }
+              - { label: Вид, name: level, widget: select, default: info, options: [{ label: Звичайне, value: info }, { label: Попередження, value: warning }, { label: Терміново, value: urgent }] }
+              - { label: Заголовок, name: title, widget: string, required: false }
+              - { label: Текст, name: text, widget: text, required: false }
+              - { label: Фото, name: photo, widget: image, required: false, hint: "Невелике фото або афіша. Показується поруч із текстом." }
+              - { label: Посилання, name: link, widget: string, required: false, hint: "Адреса сторінки або #розділ, наприклад #rozklad чи #events." }
+              - { label: Текст кнопки-посилання, name: linkText, widget: string, required: false }
+              - { label: Показувати з дати, name: from, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false, hint: "До цієї дати оголошення не видно (можна підготувати заздалегідь)." }
+              - { label: Показувати до дати, name: until, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false, hint: "Після цієї дати оголошення зникне саме, але лишиться в списку." }
+              - { label: Title (English), name: title_en, widget: string, required: false }
+              - { label: Text (English), name: text_en, widget: text, required: false }
 
   - name: events
     label: Події
