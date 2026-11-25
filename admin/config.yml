@@ -296,12 +296,15 @@ collections:
         fields:
           - { label: Заголовок, name: title, widget: string, hint: "Наприклад: Меню на 3–7 листопада." }
           - { label: Примітка, name: note, widget: string, required: false }
+          - { label: "Тиждень 1 починається з", name: cycleStart, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false, hint: "Понеділок, з якого йде тиждень 1 двотижневого меню. Якщо порожньо — тижні чергуються так само, як варіанти розкладу (від 1 вересня, канікули не рахуються)." }
           - label: Дні
             name: days
             widget: list
             label_singular: день
-            summary: "{{day}}"
+            summary: "Тиждень {{week}} · {{day}}"
+            hint: "Двотижневе меню: внесіть 5 днів для тижня 1 і 5 днів для тижня 2. Якщо меню однакове щотижня, усі дні лишайте в тижні 1."
             fields:
+              - { label: Тиждень, name: week, widget: select, default: "1", options: [{ label: "Тиждень 1", value: "1" }, { label: "Тиждень 2", value: "2" }] }
               - { label: День, name: day, widget: select, options: [Понеділок, Вівторок, Середа, Четвер, "П'ятниця"] }
               - { label: "Перші страви", name: first, widget: relation, multiple: true, required: false, collection: canteen, file: dishes, value_field: "first.*" }
               - { label: "Другі страви", name: second, widget: relation, multiple: true, required: false, collection: canteen, file: dishes, value_field: "second.*" }

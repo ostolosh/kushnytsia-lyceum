@@ -273,6 +273,8 @@ a.chip { display: inline-flex; align-items: center; text-decoration: none; }
 .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 12px; }
 .mday { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); padding: 16px; min-width: 0; }
 .mday.today { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.menuweek { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: -8px 0 16px; }
+.menuweek .varnote { margin: 0; }
 .mday h3 { font-size: 15px; display: flex; justify-content: space-between; gap: 8px; }
 .mday h3 em { font: 500 11px var(--f-mono); color: var(--accent); font-style: normal; letter-spacing: .06em; text-transform: uppercase; }
 .mday .mcat { display: block; margin-top: 12px; font-size: 14px; font-weight: 700; color: var(--ink); }
@@ -842,7 +844,6 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
   }
 }</script>
 <script type="application/json" id="data-menu.json">{
- "sample": true,
  "title": "Меню на тиждень (приклад)",
  "note": "Це приклад для перевірки вигляду. Замініть своїм меню в адмін-панелі.",
  "days": [
@@ -861,7 +862,8 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
    "drinks": [
     "Чай"
    ],
-   "other": []
+   "other": [],
+   "week": "1"
   },
   {
    "day": "Вівторок",
@@ -878,7 +880,8 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
    "drinks": [
     "Компот"
    ],
-   "other": []
+   "other": [],
+   "week": "1"
   },
   {
    "day": "Середа",
@@ -895,7 +898,8 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
    ],
    "other": [
     "Сметана"
-   ]
+   ],
+   "week": "1"
   },
   {
    "day": "Четвер",
@@ -912,7 +916,8 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
    "drinks": [
     "Узвар"
    ],
-   "other": []
+   "other": [],
+   "week": "1"
   },
   {
    "day": "П'ятниця",
@@ -929,26 +934,60 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
    "drinks": [
     "Чай з лимоном"
    ],
-   "other": []
+   "other": [],
+   "week": "1"
+  },
+  {
+   "day": "Середа",
+   "first": [
+    "Борщ"
+   ],
+   "second": [],
+   "garnish": [],
+   "salad": [],
+   "porridge": [],
+   "bakery": [
+    "Бутерброд із маслом"
+   ],
+   "drinks": [
+    "Узвар"
+   ],
+   "other": [
+    "Сметана"
+   ],
+   "week": "2"
   }
- ]
+ ],
+ "sample": true
 }</script>
 <script type="application/json" id="data-achievements.json">{
- "items": [
-  {
-   "sample": true,
-   "student": "Прізвище Ім'я",
-   "class": "9-А",
-   "title": "Призер II етапу олімпіади з математики",
-   "level": "Районний",
-   "place": "II місце",
-   "date": "2026-10-20T09:00:00.000Z",
-   "teacher": "",
-   "description": "Це приклад картки. Додайте справжні досягнення в адмін-панелі, разом із фото грамоти.",
-   "photo": "",
-   "certificate": ""
-  }
- ]
+  "items": [
+    {
+      "title": "Призер II етапу олімпіади з математики",
+      "student": "Прізвище Ім'я",
+      "class": "9-А",
+      "level": "Районний",
+      "place": "II місце",
+      "date": "2026-10-20T09:00:00.000Z",
+      "teacher": "",
+      "description": "Це приклад картки. Додайте справжні досягнення в адмін-панелі, разом із фото грамоти.",
+      "certificate": "",
+      "photo": "",
+      "sample": true
+    },
+    {
+      "title": "Призер олімпіади",
+      "student": "Метенько Дарія",
+      "class": "10",
+      "level": "Область",
+      "place": "",
+      "date": "2026-11-25T08:45:00",
+      "teacher": "",
+      "description": "",
+      "certificate": "",
+      "photo": ""
+    }
+  ]
 }</script>
 <script type="application/json" id="data-cabinets.json">{
  "items": [
@@ -4259,7 +4298,9 @@ footer { border-top: 1px solid var(--line); padding-block: 28px max(28px, env(sa
  "Соціальна і здоров'язбережувальна": "Social and health",
  "Оголошення {i} з {n}": "Announcement {i} of {n}",
  "Попереднє оголошення": "Previous announcement",
- "Наступне оголошення": "Next announcement"
+ "Наступне оголошення": "Next announcement",
+ "Меню їдальні": "Canteen menu",
+ "тиждень {n} меню": "menu week {n}"
 }</script>
 <!--/I18N-->
 <script>
@@ -5510,23 +5551,66 @@ window.__sheetOr = function (name, fallback) {
 
   // ---------- їдальня
   var MENU_CATS = [["first", "Перші страви"], ["second", "Другі страви"], ["garnish", "Гарніри"], ["salad", "Салати"], ["porridge", "Каші"], ["bakery", "Випічка й десерти"], ["drinks", "Напої"], ["other", "Інше"]];
-  window.loadData("menu.json").then(function (m) {
+  // двотижневе меню: тижні чергуються так само, як варіанти розкладу (канікули не рахуються), або від дати cycleStart
+  function mAdd(ymd, n) { var d = new Date(ymd + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+  function mMon(ymd) { var d = new Date(ymd + "T12:00:00Z"); return mAdd(ymd, -((d.getUTCDay() + 6) % 7)); }
+  function mIn(ymd, list) { return (list || []).some(function (r) { return ymd >= r.from && ymd <= (r.to || r.from); }); }
+  Promise.all([window.loadData("menu.json"), window.loadData("schedule.json").catch(function () { return {}; })]).then(function (res) {
+    var m = res[0], sch = res[1] || {};
     if (!m || !m.days || !m.days.length) return;
     $("canteen").hidden = false; $("qlCanteen").hidden = false;
-    $("canteenTitle").textContent = _tx(m, "title") || _t("Меню на тиждень");
+    var two = m.days.some(function (d) { return String(d.week || 1) === "2"; });
+    $("canteenTitle").textContent = _tx(m, "title") || _t(two ? "Меню їдальні" : "Меню на тиждень");
     $("canteenNote").textContent = _tx(m, "note");
-    var today = kyivNow().dow, host = $("menuGrid"), entries = [];
-    m.days.forEach(function (d) {
-      var i = DAYS.map(norm).indexOf(norm(d.day)), card = el("div", "mday" + (i === today ? " today" : ""));
-      var h = el("h3", "", _t(d.day)); if (i === today) h.appendChild(el("em", "", _t("Сьогодні"))); card.appendChild(h);
+    var terms = sch.terms || [], hol = sch.holidays || [];
+    function schoolDay(ymd) { var w = new Date(ymd + "T12:00:00Z").getUTCDay(); return w >= 1 && w <= 5 && (!terms.length || mIn(ymd, terms)) && !mIn(ymd, hol); }
+    function schoolWeek(mon) { for (var k = 0; k < 5; k++) if (schoolDay(mAdd(mon, k))) return true; return false; }
+    function weekOf(ymd) {
+      var start = m.cycleStart ? mMon(String(m.cycleStart).slice(0, 10)) : terms.length ? mMon(terms[0].from) : null, target = mMon(ymd), n = 0;
+      if (!start || target < start) return 1;
+      for (var x = start; x < target; x = mAdd(x, 7)) if (schoolWeek(x)) n++;
+      return ((n + (!m.cycleStart && sch.firstVariant === 2 ? 1 : 0)) % 2) + 1;
+    }
+    var now = kyivNow(), todayIso = now.iso, weeks = [];
+    if (two) { for (var d0 = todayIso, k = 0; k < 200 && weeks.length < 2; k++) { if (schoolDay(d0)) { var mo = mMon(d0); weeks.push({ mon: mo, n: weekOf(d0), now: mo === mMon(todayIso) }); d0 = mAdd(mo, 7); } else d0 = mAdd(d0, 1); } }
+    var wsel = 0, host = $("menuGrid"), entries = [];
+    var bar = null;
+    if (two && weeks.length) {
+      bar = el("div", "menuweek");
+      var seg = el("div", "seg"), b1 = el("button", "", weeks[0].now ? _t("Цей тиждень") : _t("Найближчий")), b2 = el("button", "", _t("Наступний")), note = el("span", "varnote");
+      b1.type = b2.type = "button"; seg.appendChild(b1); if (weeks[1]) seg.appendChild(b2); bar.appendChild(seg); bar.appendChild(note);
+      b1.addEventListener("click", function () { wsel = 0; draw(); }); b2.addEventListener("click", function () { wsel = 1; draw(); });
+      host.parentNode.insertBefore(bar, host);
+      bar.upd = function () {
+        b1.setAttribute("aria-pressed", String(wsel === 0)); b2.setAttribute("aria-pressed", String(wsel === 1));
+        var w = weeks[wsel], a = new Date(w.mon + "T12:00:00Z"), z = new Date(mAdd(w.mon, 4) + "T12:00:00Z");
+        var f = function (x, o) { return x.toLocaleDateString(LOC, Object.assign({ timeZone: "UTC" }, o)); };
+        note.textContent = (a.getUTCMonth() === z.getUTCMonth() ? f(a, { day: "numeric" }) + "–" + f(z, { day: "numeric", month: "long" }) : f(a, { day: "numeric", month: "short" }) + " – " + f(z, { day: "numeric", month: "short" })) + " · " + _tf("тиждень {n} меню", { n: w.n });
+      };
+    }
+    function card(d, isToday) {
+      var c = el("div", "mday" + (isToday ? " today" : ""));
+      var h = el("h3", "", _t(d.day)); if (isToday) h.appendChild(el("em", "", _t("Сьогодні"))); c.appendChild(h);
       var items = [];
-      function list(arr) { var ul = el("ul"); arr.forEach(function (t) { ul.appendChild(el("li", "", t)); items.push(t); }); card.appendChild(ul); }
-      var grouped = MENU_CATS.filter(function (c) { return d[c[0]] && d[c[0]].length; });
-      if (grouped.length) grouped.forEach(function (c) { card.appendChild(el("b", "mcat", _t(c[1]))); list(d[c[0]].map(_t)); });
+      function list(arr) { var ul = el("ul"); arr.forEach(function (t) { ul.appendChild(el("li", "", t)); items.push(t); }); c.appendChild(ul); }
+      var grouped = MENU_CATS.filter(function (x) { return d[x[0]] && d[x[0]].length; });
+      if (grouped.length) grouped.forEach(function (x) { c.appendChild(el("b", "mcat", _t(x[1]))); list(d[x[0]].map(_t)); });
       else list(EN && d.items_en && d.items_en.length ? d.items_en : (d.items || []).map(_t));
-      host.appendChild(card);
-      entries.push({ k: "Їдальня", title: _tf("Меню: {d}", { d: _t(d.day) }), text: items.join(", "), hash: "canteen" });
-    });
+      c.items = items; return c;
+    }
+    function draw() {
+      host.textContent = "";
+      var w = two && weeks.length ? weeks[wsel] : null;
+      var days = m.days.filter(function (d) { return !w || String(d.week || 1) === String(w.n); })
+        .sort(function (a, b) { return DAYS.map(norm).indexOf(norm(a.day)) - DAYS.map(norm).indexOf(norm(b.day)); });
+      days.forEach(function (d) {
+        var i = DAYS.map(norm).indexOf(norm(d.day));
+        host.appendChild(card(d, i === now.dow && (!w || (wsel === 0 && w.now))));
+      });
+      if (bar) bar.upd();
+    }
+    draw();
+    m.days.forEach(function (d) { var c = card(d, false); entries.push({ k: "Їдальня", title: _tf("Меню: {d}", { d: _t(d.day) }) + (two ? " (" + _tf("тиждень {n} меню", { n: d.week || 1 }) + ")" : ""), text: c.items.join(", "), hash: "canteen" }); });
     window.__addIdx(entries);
   }).catch(function () {});
 
