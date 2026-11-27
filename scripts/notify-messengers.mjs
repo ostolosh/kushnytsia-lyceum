@@ -13,7 +13,9 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
-const SITE = (process.env.SITE_URL || "").replace(/\/$/, "");
+// адреса сайту: змінна SITE_URL або, якщо її немає, адреса GitHub Pages цього репозиторію
+const repo = process.env.GITHUB_REPOSITORY || "";
+const SITE = (process.env.SITE_URL || (repo ? `https://${repo.split("/")[0].toLowerCase()}.github.io/${repo.split("/")[1]}` : "")).replace(/\/$/, "");
 const TG_TOKEN = process.env.TELEGRAM_BOT_TOKEN, TG_CHAT = process.env.TELEGRAM_CHAT_ID;
 const VB_TOKEN = process.env.VIBER_AUTH_TOKEN, VB_FROM = process.env.VIBER_FROM;
 
@@ -63,10 +65,21 @@ const abs = (u) => (!u ? "" : /^https?:/.test(u) ? u : SITE ? `${SITE}/${u.repla
 const short = (t, n) => (t.length > n ? t.slice(0, n).replace(/\s+\S*$/, "") + "…" : t);
 
 async function telegram(p) {
-  const text = [p.title, "", short(p.body, 700), p.link ? "\nЧитати: " + p.link : ""].join("\n").trim();
-  const photo = abs(p.image);
+  const text = [p.title, p.body ? "\n" + short(p.body, 700) : "", p.link ? "\nЧитати: " + p.link : ""].filter(Boolean).join("\n").trim();
   const call = (method, body) => fetch(`https://api.telegram.org/bot${TG_TOKEN}/${method}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json());
-  let res = photo && text.length <= 1024 ? await call("sendPhoto", { chat_id: TG_CHAT, photo, caption: text }) : null;
+  let res = null;
+  if (p.image && text.length <= 1024) {
+    const local = !/^https?:/.test(p.image) && path.join(root, p.image.replace(/^\//, ""));
+    if (local && existsSync(local)) {
+      // фото з репозиторію надсилаємо файлом: на сайті воно з'являється лише після збирання
+      const form = new FormData();
+      form.append("chat_id", TG_CHAT);
+      form.append("caption", text);
+      form.append("photo", new Blob([await readFile(local)]), path.basename(local));
+      res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendPhoto`, { method: "POST", body: form }).then((r) => r.json());
+    } else if (abs(p.image)) res = await call("sendPhoto", { chat_id: TG_CHAT, photo: abs(p.image), caption: text });
+    if (res && !res.ok) console.log("Фото не надіслано (" + res.description + "), надсилаю текст.");
+  }
   if (!res || !res.ok) res = await call("sendMessage", { chat_id: TG_CHAT, text: text.slice(0, 4096), disable_web_page_preview: false });
   if (!res.ok) throw new Error("Telegram: " + res.description);
 }
