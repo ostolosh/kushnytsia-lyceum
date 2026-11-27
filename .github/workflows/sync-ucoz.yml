@@ -38,6 +38,8 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           VIBER_AUTH_TOKEN: ${{ secrets.VIBER_AUTH_TOKEN }}
           VIBER_FROM: ${{ secrets.VIBER_FROM }}
+        # помилка месенджера не повинна зупиняти оновлення сайту
+        continue-on-error: true
         run: node scripts/notify-messengers.mjs
       - name: Зберегти зміни
         id: save
