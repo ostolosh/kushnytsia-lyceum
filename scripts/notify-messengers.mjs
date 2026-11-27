@@ -17,7 +17,8 @@ const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..")
 const repo = process.env.GITHUB_REPOSITORY || "";
 const SITE = (process.env.SITE_URL || (repo ? `https://${repo.split("/")[0].toLowerCase()}.github.io/${repo.split("/")[1]}` : "")).replace(/\/$/, "");
 const TG_TOKEN = process.env.TELEGRAM_BOT_TOKEN, TG_CHAT = process.env.TELEGRAM_CHAT_ID;
-const VB_TOKEN = process.env.VIBER_AUTH_TOKEN, VB_FROM = process.env.VIBER_FROM;
+const VB_TOKEN = (process.env.VIBER_AUTH_TOKEN || "").trim();
+let VB_FROM = (process.env.VIBER_FROM || "").trim(); // необов'язково: інакше береться суперадмін каналу
 
 const readJSON = async (f, d) => (existsSync(path.join(root, f)) ? JSON.parse(await readFile(path.join(root, f), "utf8")) : d);
 
@@ -84,10 +85,25 @@ async function telegram(p) {
   if (!res.ok) throw new Error("Telegram: " + res.description);
 }
 
-// Viber: публікація в канал через Post API. Цей блок написано за пам'яттю документації й НЕ перевірений на практиці.
+// Viber: публікація в канал через Channels Post API (маркер з «Інструментів розробника» каналу).
 // Помилка тут не зупиняє роботу: вона лише виводиться в журнал.
+// хто публікує в канал: ID суперадміністратора. Якщо VIBER_FROM не задано, беремо його з даних каналу.
+// ID у журнал не виводимо: журнали публічного репозиторію видно всім.
+async function viberSender() {
+  const info = await fetch("https://chatapi.viber.com/pa/get_account_info", {
+    method: "POST", headers: { "Content-Type": "application/json", "X-Viber-Auth-Token": VB_TOKEN }, body: "{}",
+  }).then((r) => r.json());
+  if (info.status !== 0) throw new Error("Viber: маркер не прийнято (" + (info.status_message || info.status) + "). Перевірте секрет VIBER_AUTH_TOKEN.");
+  console.log(`Viber: канал «${info.name || "?"}».`);
+  const admins = (info.members || []).filter((m) => m.role === "superadmin");
+  const me = admins.find((m) => m.id === VB_FROM) || admins[0];
+  if (!me) throw new Error("Viber: у каналі не знайдено суперадміністратора, від імені якого публікувати.");
+  console.log(`Viber: публікую від імені суперадміністратора «${me.name}».`);
+  return me.id;
+}
+
 async function viber(p) {
-  const text = [p.title, "", short(p.body, 800), p.link ? "\n" + p.link : ""].join("\n").trim();
+  const text = [p.title, p.body ? "\n" + short(p.body, 800) : "", p.link ? "\n" + p.link : ""].filter(Boolean).join("\n").trim();
   const res = await fetch("https://chatapi.viber.com/pa/post", {
     method: "POST", headers: { "Content-Type": "application/json", "X-Viber-Auth-Token": VB_TOKEN },
     body: JSON.stringify({ from: VB_FROM, type: "text", text }),
@@ -95,10 +111,12 @@ async function viber(p) {
   if (res.status !== 0) throw new Error("Viber: " + JSON.stringify(res));
 }
 
+if (VB_TOKEN) { try { VB_FROM = await viberSender(); } catch (e) { console.error(e.message); VB_FROM = ""; process.exitCode = 1; } }
+
 for (const p of fresh) {
   let sentAny = false;
   if (TG_TOKEN && TG_CHAT) { try { await telegram(p); sentAny = true; console.log("Telegram ✓", p.title); } catch (e) { console.error(e.message); process.exitCode = 1; continue; } }
-  if (VB_TOKEN && VB_FROM) { try { await viber(p); console.log("Viber ✓", p.title); } catch (e) { console.error(e.message); } }
+  if (VB_TOKEN && VB_FROM) { try { await viber(p); console.log("Viber ✓", p.title); } catch (e) { console.error(e.message); process.exitCode = 1; } }
   done.add(p.id);
 }
 await writeFile(notifiedPath, JSON.stringify({ ids: [...done] }, null, 1) + "\n");
