@@ -94,22 +94,30 @@ async function main() {
   const fields = "id,message,created_time,permalink_url,full_picture,status_type," +
     "attachments{media_type,title,description,media,url,subattachments.limit(20){media_type,media}}";
   // ---- діагностика токена (самі токени ніколи не виводяться)
-  let token = TOKEN;
-  const me = await graph(`${base}me?fields=id,name&access_token=${encodeURIComponent(token)}`);
-  if (me.id === PAGE_ID) console.log(`Токен належить сторінці «${me.name}» — добре.`);
-  else {
-    console.log(`Увага: токен належить не сторінці, а користувачу «${me.name}» (id ${me.id}). Пробую отримати з нього токен сторінки…`);
-    try {
-      const pg = await graph(`${base}${encodeURIComponent(PAGE_ID)}?fields=name,access_token&access_token=${encodeURIComponent(token)}`);
-      if (pg.access_token) { token = pg.access_token; console.log(`Отримано токен сторінки «${pg.name}». Порада: збережіть саме токен сторінки в FB_PAGE_TOKEN.`); }
-      else console.log(`Сторінка «${pg.name || PAGE_ID}» не віддала токен: у користувача немає повного доступу до неї.`);
-    } catch (e) { console.log("Не вдалося отримати токен сторінки: " + e.message); }
+  let token = TOKEN, pageId = PAGE_ID;
+  const me = await graph(`${base}me?metadata=1&fields=id,name,metadata{type}&access_token=${encodeURIComponent(token)}`);
+  const meType = me.metadata?.type || "";
+  if (meType === "page") {
+    console.log(`Токен належить сторінці «${me.name}» — добре.`);
+    if (me.id !== PAGE_ID) { console.log(`Увага: FB_PAGE_ID не збігається з ID цієї сторінки (${me.id}). Використовую ${me.id}.`); pageId = me.id; }
+  } else {
+    console.log(`Увага: токен належить не сторінці, а користувачу «${me.name}» (id ${me.id}).` + (me.id === PAGE_ID ? " У FB_PAGE_ID записано ID цього користувача, а не сторінки." : ""));
+    // сторінки, до яких цей користувач має доступ
+    let pages = [];
+    try { pages = (await graph(`${base}me/accounts?fields=id,name,access_token&limit=100&access_token=${encodeURIComponent(token)}`)).data || []; }
+    catch (e) { console.log("Не вдалося отримати список сторінок: " + e.message); }
+    console.log(pages.length ? "Доступні сторінки: " + pages.map((p) => `«${p.name}» (ID ${p.id})`).join(", ") : "Цей користувач не має доступу до жодної сторінки: призначте йому сторінку в бізнес-налаштуваннях.");
+    const pick = pages.find((p) => p.id === PAGE_ID) || (pages.length === 1 ? pages[0] : pages.find((p) => /кушниц/i.test(p.name)));
+    if (pick && pick.access_token) {
+      token = pick.access_token; pageId = pick.id;
+      console.log(`Використовую сторінку «${pick.name}» (ID ${pick.id}). Порада: запишіть цей ID у FB_PAGE_ID.`);
+    }
   }
 
   // ---- дописи: posts, а якщо там порожньо — published_posts і feed
   const data = [];
   for (const edge of ["posts", "published_posts", "feed"]) {
-    let url = `${base}${encodeURIComponent(PAGE_ID)}/${edge}?fields=${encodeURIComponent(fields)}&limit=${LIMIT}&access_token=${encodeURIComponent(token)}`;
+    let url = `${base}${encodeURIComponent(pageId)}/${edge}?fields=${encodeURIComponent(fields)}&limit=${LIMIT}&access_token=${encodeURIComponent(token)}`;
     const got = [];
     try {
       for (let i = 0; i < PAGES && url; i++) {
@@ -155,7 +163,7 @@ async function main() {
   const out = {
     updated: new Date().toISOString(),
     source: "facebook",
-    pageUrl: `https://www.facebook.com/${PAGE_ID}`,
+    pageUrl: `https://www.facebook.com/${pageId}`,
     posts,
   };
   await writeFile(postsFile, JSON.stringify(out, null, 2) + "\n");
