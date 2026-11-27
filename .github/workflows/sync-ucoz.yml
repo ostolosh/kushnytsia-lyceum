@@ -2,8 +2,11 @@ name: Новини зі старого сайту
 
 # Забирає нові новини зі стрічки kyshnica-soh.ucoz.ua (без токенів) у news-archive.json.
 on:
+  # Рівні години за Києвом (00:00, 02:00, … 22:00), як і синхронізація Facebook.
+  # Київ узимку UTC+2, улітку UTC+3: розкладів два, а «gate» залишає потрібний.
   schedule:
-    - cron: "47 4-19/2 * * *"   # кожні 2 години з 6:47 до 21:47 за Києвом (UTC+2)
+    - cron: "0 0-22/2 * * *"    # зимовий час (UTC+2)
+    - cron: "0 1-23/2 * * *"    # літній час (UTC+3)
   workflow_dispatch: {}
 
 permissions:
@@ -15,7 +18,27 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      go: ${{ steps.check.outputs.go }}
+    steps:
+      - id: check
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          off=$(TZ=Europe/Kyiv date +%z)
+          if [ -z "$SCHEDULE" ] \
+             || { [ "$off" = "+0200" ] && [ "$SCHEDULE" = "0 0-22/2 * * *" ]; } \
+             || { [ "$off" = "+0300" ] && [ "$SCHEDULE" = "0 1-23/2 * * *" ]; }; then
+            echo "go=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "Цей розклад не для поточного сезону (Київ $off) — пропускаю."
+          fi
+
   sync:
+    needs: gate
+    if: needs.gate.outputs.go == '1'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
