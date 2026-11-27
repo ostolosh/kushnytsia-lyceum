@@ -108,6 +108,7 @@ def main():
         raise SystemExit("У стрічці новин немає записів: перевірте адресу " + SITE + "/news/rss/")
 
     added = updated = 0
+    remote = {}  # id → посилання на фото на старому сайті, для Viber (у репозиторій не зберігається)
     for it in items:
         def tag(name):
             m = re.search(rf"<{name}>(.*?)</{name}>", it, re.S)
@@ -140,6 +141,9 @@ def main():
                 name = f"{pid}-{k + 1}.jpg"
                 if save_photo(src, name):
                     images.append(f"archive/news/{name}")
+        srcs = photo_paths(body)
+        if images and srcs:
+            remote["old:" + pid] = SITE + srcs[0]
         posts[pid] = {"id": pid, "date": prev["date"] if prev else date, "title": title, "text": text,
                       "images": images, "links": video_links(body), "rss": clean(rss_body)}
         if prev:
@@ -149,6 +153,7 @@ def main():
 
     data["posts"] = sorted(posts.values(), key=lambda p: p["date"], reverse=True)
     data["source"] = SITE.split("//")[-1]
+    (ROOT / ".remote-images.json").write_text(json.dumps(remote), encoding="utf-8")
     ARCHIVE.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Готово: нових новин {added}, змінених {updated}, усього {len(data['posts'])}.")
 

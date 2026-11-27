@@ -102,12 +102,27 @@ async function viberSender() {
   return me.id;
 }
 
+// Viber бере фото лише за публічним посиланням. Свіжих фото на сайті ще немає (сайт збирається пізніше),
+// тому беремо оригінал із Facebook чи старого сайту, який записала синхронізація в .remote-images.json.
+const remoteImages = existsSync(path.join(root, ".remote-images.json")) ? JSON.parse(await readFile(path.join(root, ".remote-images.json"), "utf8")) : {};
+
 async function viber(p) {
-  const text = [p.title, p.body ? "\n" + short(p.body, 800) : "", p.link ? "\n" + p.link : ""].filter(Boolean).join("\n").trim();
-  const res = await fetch("https://chatapi.viber.com/pa/post", {
+  const post = (body) => fetch("https://chatapi.viber.com/pa/post", {
     method: "POST", headers: { "Content-Type": "application/json", "X-Viber-Auth-Token": VB_TOKEN },
-    body: JSON.stringify({ from: VB_FROM, type: "text", text }),
+    body: JSON.stringify({ from: VB_FROM, ...body }),
   }).then((r) => r.json());
+  const make = (n) => [p.title, p.body ? "\n" + short(p.body, n) : "", p.link ? "\n" + p.link : ""].filter(Boolean).join("\n").trim();
+  // фото: оригінал зі щойно виконаної синхронізації або фото, що вже є на сайті (новини з адмін-панелі)
+  const media = remoteImages[p.id] || (p.id.startsWith("man:") ? abs(p.image) : "");
+  if (media) {
+    // у підписі до фото Viber дозволяє до 768 символів
+    let text = make(500);
+    if (text.length > 768) text = text.slice(0, 767) + "…";
+    const res = await post({ type: "picture", text, media, thumbnail: media });
+    if (res.status === 0) return;
+    console.log("Viber: фото не прийнято (" + (res.status_message || res.status) + "), надсилаю текст.");
+  }
+  const res = await post({ type: "text", text: make(800) });
   if (res.status !== 0) throw new Error("Viber: " + JSON.stringify(res));
 }
 

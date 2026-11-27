@@ -134,6 +134,7 @@ async function main() {
   if (!data.length) console.log("Facebook не повернув жодного допису. Якщо на сторінці дописи є, перевірте, що застосунок у режимі Live, а токен — від сторінки (див. README).");
 
   let added = 0, updated = 0, skipped = 0;
+  const remote = {}; // id → посилання на головне фото у Facebook, для Viber (у репозиторій не зберігається)
   for (const p of data) {
     const text = textOf(p);
     const all = photoUrls(p), urls = all.slice(0, PHOTOS);
@@ -153,6 +154,7 @@ async function main() {
     const item = { id: p.id, date: p.created_time, text, image: gallery[0] || "", gallery, url: p.permalink_url || "" };
     if (video) item.video = true;
     if (all.length > gallery.length) item.morePhotos = all.length; // решта фото лише у Facebook
+    if (urls[0]) remote["fb:" + p.id] = urls[0];
     if (!prev) added++;
     else if (prev.text !== text) updated++;
     known.set(p.id, item);
@@ -169,6 +171,7 @@ async function main() {
     posts,
   };
   await writeFile(postsFile, JSON.stringify(out, null, 2) + "\n");
+  await writeFile(path.join(root, ".remote-images.json"), JSON.stringify(remote));
 
   // прибираємо фото публікацій, які вже випали зі списку або більше не використовуються
   const used = new Set(posts.flatMap((q) => (q.gallery || [q.image]).filter(Boolean).map((f) => path.basename(f))));
