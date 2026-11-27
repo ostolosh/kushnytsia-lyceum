@@ -95,9 +95,11 @@ async function main() {
     "attachments{media_type,title,description,media,url,subattachments.limit(20){media_type,media}}";
   // ---- діагностика токена (самі токени ніколи не виводяться)
   let token = TOKEN, pageId = PAGE_ID;
-  const me = await graph(`${base}me?metadata=1&fields=id,name,metadata{type}&access_token=${encodeURIComponent(token)}`);
-  const meType = me.metadata?.type || "";
-  if (meType === "page") {
+  // поле category є лише в сторінок: якщо запит з ним вдався — токен сторінки
+  let me, isPage = true;
+  try { me = await graph(`${base}me?fields=id,name,category&access_token=${encodeURIComponent(token)}`); }
+  catch { isPage = false; me = await graph(`${base}me?fields=id,name&access_token=${encodeURIComponent(token)}`); }
+  if (isPage) {
     console.log(`Токен належить сторінці «${me.name}» — добре.`);
     if (me.id !== PAGE_ID) { console.log(`Увага: FB_PAGE_ID не збігається з ID цієї сторінки (${me.id}). Використовую ${me.id}.`); pageId = me.id; }
   } else {
