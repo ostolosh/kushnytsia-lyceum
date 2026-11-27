@@ -61,6 +61,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           VIBER_AUTH_TOKEN: ${{ secrets.VIBER_AUTH_TOKEN }}
           VIBER_FROM: ${{ secrets.VIBER_FROM }}
+          VIBER_WEBHOOK_URL: ${{ vars.VIBER_WEBHOOK_URL }}
         # помилка месенджера не повинна зупиняти оновлення сайту
         continue-on-error: true
         run: node scripts/notify-messengers.mjs

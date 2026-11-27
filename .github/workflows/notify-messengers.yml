@@ -7,7 +7,12 @@ on:
     branches: [main]
     paths:
       - "posts-manual.json"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      viber_test:
+        description: "Тест Viber: надіслати лише останню новину лише у Viber"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -33,6 +38,8 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           VIBER_AUTH_TOKEN: ${{ secrets.VIBER_AUTH_TOKEN }}
           VIBER_FROM: ${{ secrets.VIBER_FROM }}
+          VIBER_WEBHOOK_URL: ${{ vars.VIBER_WEBHOOK_URL }}
+          VIBER_TEST: ${{ github.event.inputs.viber_test }}
         # помилка месенджера не повинна зупиняти оновлення сайту
         continue-on-error: true
         run: node scripts/notify-messengers.mjs

@@ -19,6 +19,8 @@ const SITE = (process.env.SITE_URL || (repo ? `https://${repo.split("/")[0].toLo
 const TG_TOKEN = process.env.TELEGRAM_BOT_TOKEN, TG_CHAT = process.env.TELEGRAM_CHAT_ID;
 const VB_TOKEN = (process.env.VIBER_AUTH_TOKEN || "").trim();
 let VB_FROM = (process.env.VIBER_FROM || "").trim(); // необов'язково: інакше береться суперадмін каналу
+// Viber вимагає один раз зареєструвати вебхук: будь-яку https-адресу, що відповідає 200 (напр. Cloudflare Worker «Hello World»)
+const VB_HOOK = (process.env.VIBER_WEBHOOK_URL || "").trim();
 
 const readJSON = async (f, d) => (existsSync(path.join(root, f)) ? JSON.parse(await readFile(path.join(root, f), "utf8")) : d);
 
@@ -59,7 +61,7 @@ const MAX_AGE_MS = Number(process.env.NOTIFY_MAX_AGE_DAYS || 3) * 86400000;
 const unseen = all.filter((p) => !done.has(p.id));
 const fresh = unseen.filter((p) => Date.now() - new Date(p.date) <= MAX_AGE_MS).sort((a, b) => new Date(a.date) - new Date(b.date));
 unseen.filter((p) => !fresh.includes(p)).forEach((p) => done.add(p.id));
-if (!fresh.length) { await writeFile(notifiedPath, JSON.stringify({ ids: [...done] }, null, 1) + "\n"); console.log("Нових свіжих новин немає."); process.exit(0); }
+if (!fresh.length && process.env.VIBER_TEST !== "true") { await writeFile(notifiedPath, JSON.stringify({ ids: [...done] }, null, 1) + "\n"); console.log("Нових свіжих новин немає."); process.exit(0); }
 if (!TG_TOKEN && !VB_TOKEN) console.log("Жоден месенджер не налаштовано; новини лише позначаються як опрацьовані.");
 
 const abs = (u) => (!u ? "" : /^https?:/.test(u) ? u : SITE ? `${SITE}/${u.replace(/^\//, "")}` : "");
@@ -107,13 +109,24 @@ async function viberSender() {
 const remoteImages = existsSync(path.join(root, ".remote-images.json")) ? JSON.parse(await readFile(path.join(root, ".remote-images.json"), "utf8")) : {};
 
 async function viber(p) {
-  const post = (body) => fetch("https://chatapi.viber.com/pa/post", {
+  const api = (method, body) => fetch("https://chatapi.viber.com/pa/" + method, {
     method: "POST", headers: { "Content-Type": "application/json", "X-Viber-Auth-Token": VB_TOKEN },
-    body: JSON.stringify({ from: VB_FROM, ...body }),
+    body: JSON.stringify(body),
   }).then((r) => r.json());
+  const post = async (body) => {
+    let res = await api("post", { from: VB_FROM, ...body });
+    if (res.status === 10) { // webhookNotSet
+      if (!VB_HOOK) throw new Error("Viber: для каналу не зареєстровано вебхук. Додайте змінну VIBER_WEBHOOK_URL (див. README, «Новини в Telegram і Viber»).");
+      const hook = await api("set_webhook", { url: VB_HOOK, event_types: ["failed"], send_name: false, send_photo: false });
+      if (hook.status !== 0) throw new Error("Viber: не вдалося зареєструвати вебхук (" + (hook.status_message || hook.status) + "). Перевірте, що адреса VIBER_WEBHOOK_URL відкривається й відповідає 200.");
+      console.log("Viber: вебхук зареєстровано.");
+      res = await api("post", { from: VB_FROM, ...body });
+    }
+    return res;
+  };
   const make = (n) => [p.title, p.body ? "\n" + short(p.body, n) : "", p.link ? "\n" + p.link : ""].filter(Boolean).join("\n").trim();
   // фото: оригінал зі щойно виконаної синхронізації або фото, що вже є на сайті (новини з адмін-панелі)
-  const media = remoteImages[p.id] || (p.id.startsWith("man:") ? abs(p.image) : "");
+  const media = remoteImages[p.id] || abs(p.image);
   if (media) {
     // у підписі до фото Viber дозволяє до 768 символів
     let text = make(500);
@@ -124,6 +137,15 @@ async function viber(p) {
   }
   const res = await post({ type: "text", text: make(800) });
   if (res.status !== 0) throw new Error("Viber: " + JSON.stringify(res));
+}
+
+// Тест Viber (кнопка Run workflow з позначкою): лише остання новина, лише у Viber, список надісланого не змінюється
+if (process.env.VIBER_TEST === "true") {
+  if (!VB_TOKEN) { console.error("Viber: секрет VIBER_AUTH_TOKEN не задано."); process.exit(1); }
+  const last = [...all].sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+  try { VB_FROM = await viberSender(); await viber(last); console.log("Viber ✓ (тест)", last.title); }
+  catch (e) { console.error(e.message); process.exit(1); }
+  process.exit(0);
 }
 
 if (VB_TOKEN) { try { VB_FROM = await viberSender(); } catch (e) { console.error(e.message); VB_FROM = ""; process.exitCode = 1; } }
