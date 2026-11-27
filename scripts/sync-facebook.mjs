@@ -93,19 +93,41 @@ async function main() {
 
   const fields = "id,message,created_time,permalink_url,full_picture,status_type," +
     "attachments{media_type,title,description,media,url,subattachments.limit(20){media_type,media}}";
-  let url = `${base}${encodeURIComponent(PAGE_ID)}/posts?fields=${encodeURIComponent(fields)}&limit=${LIMIT}&access_token=${encodeURIComponent(TOKEN)}`;
-  const data = [];
-  for (let i = 0; i < PAGES && url; i++) {
-    const page = await graph(url);
-    data.push(...(page.data || []));
-    url = page.paging?.next || "";
+  // ---- діагностика токена (самі токени ніколи не виводяться)
+  let token = TOKEN;
+  const me = await graph(`${base}me?fields=id,name&access_token=${encodeURIComponent(token)}`);
+  if (me.id === PAGE_ID) console.log(`Токен належить сторінці «${me.name}» — добре.`);
+  else {
+    console.log(`Увага: токен належить не сторінці, а користувачу «${me.name}» (id ${me.id}). Пробую отримати з нього токен сторінки…`);
+    try {
+      const pg = await graph(`${base}${encodeURIComponent(PAGE_ID)}?fields=name,access_token&access_token=${encodeURIComponent(token)}`);
+      if (pg.access_token) { token = pg.access_token; console.log(`Отримано токен сторінки «${pg.name}». Порада: збережіть саме токен сторінки в FB_PAGE_TOKEN.`); }
+      else console.log(`Сторінка «${pg.name || PAGE_ID}» не віддала токен: у користувача немає повного доступу до неї.`);
+    } catch (e) { console.log("Не вдалося отримати токен сторінки: " + e.message); }
   }
 
-  let added = 0, updated = 0;
+  // ---- дописи: posts, а якщо там порожньо — published_posts і feed
+  const data = [];
+  for (const edge of ["posts", "published_posts", "feed"]) {
+    let url = `${base}${encodeURIComponent(PAGE_ID)}/${edge}?fields=${encodeURIComponent(fields)}&limit=${LIMIT}&access_token=${encodeURIComponent(token)}`;
+    const got = [];
+    try {
+      for (let i = 0; i < PAGES && url; i++) {
+        const page = await graph(url);
+        got.push(...(page.data || []));
+        url = page.paging?.next || "";
+      }
+    } catch (e) { console.log(`${edge}: помилка — ${e.message}`); continue; }
+    console.log(`${edge}: отримано ${got.length} дописів` + (got[0] ? ` (останній ${got[0].created_time}, тип ${got[0].status_type || "—"})` : ""));
+    if (got.length) { data.push(...got); break; }
+  }
+  if (!data.length) console.log("Facebook не повернув жодного допису. Якщо на сторінці дописи є, перевірте, що застосунок у режимі Live, а токен — від сторінки (див. README).");
+
+  let added = 0, updated = 0, skipped = 0;
   for (const p of data) {
     const text = textOf(p);
     const all = photoUrls(p), urls = all.slice(0, PHOTOS);
-    if (!text && !urls.length) continue; // порожні службові події пропускаємо
+    if (!text && !urls.length) { skipped++; continue; } // порожні службові події пропускаємо
     const prev = known.get(p.id);
     const safeId = p.id.replace(/[^\w-]/g, "_");
     // фото тягнемо лише раз: посилання Facebook CDN з часом протухають
@@ -145,7 +167,7 @@ async function main() {
     if (!used.has(f) && /\.(jpe?g|png|webp)$/i.test(f)) { await unlink(path.join(imagesDir, f)); removed++; }
   }
   if (removed) console.log(`Видалено фото, які більше не потрібні: ${removed}.`);
-  console.log(`Готово: ${posts.length} публікацій, нових: ${added}, змінених: ${updated}.`);
+  console.log(`Готово: ${posts.length} публікацій, нових: ${added}, змінених: ${updated}` + (skipped ? `, пропущено без тексту й фото: ${skipped}` : "") + ".");
 }
 
 main().catch((e) => {
